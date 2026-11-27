@@ -215,7 +215,7 @@
           ${p.present
             ? `<path d="M${p.x} ${p.y} C${p.x + 10} ${p.y - 54}, ${p.x + 90} ${p.y - 54}, ${p.x + 100} ${p.y}" stroke="#2d9a63" stroke-width="7" fill="none" stroke-linecap="round"/>`
             : `<path d="M${p.x} ${p.y} C${p.x + 10} ${p.y - 54}, ${p.x + 90} ${p.y - 54}, ${p.x + 100} ${p.y}" stroke="#9fb5ae" stroke-width="3" stroke-dasharray="6 6" fill="none"/>`}
-          <text x="${p.x + 50}" y="${p.y - 46}" text-anchor="middle" class="plabel small">${p.present ? tr('وصلة (اضغط لإزالتها)', 'Jumper (tap to remove)') : tr('مفتوحة (اضغط لإرجاعها)', 'Open (tap to replace)')}</text>
+          <text x="${p.x + 50}" y="${p.y - 46}" text-anchor="middle" class="plabel small">${p.tag ? `<tspan class="jtag">${p.tag}</tspan> ` : ''}${p.present ? tr('وصلة (اضغط لإزالتها)', 'Jumper (tap to remove)') : tr('مفتوحة (اضغط لإرجاعها)', 'Open (tap to replace)')}</text>
         </g>`,
       elems: (p, n) => (p.present ? [{ t: 'R', a: n('a'), b: n('b'), R: 0.002, id: p.id }] : []),
     },
@@ -453,6 +453,91 @@
           ${p.label ? label(p.cx, p.cy - 50, p.label) : ''}
         </g>`,
       elems: (p, n) => [{ t: 'R', a: n('a'), b: n('b'), R: p.light ? 1200 : 180000, id: p.id }],
+    },
+
+    // ── شاحن جوال USB: منفذ مكبّر بأربعة أطراف (1 = +5V، 4 = الأرضي) ──
+    usbCharger: {
+      terms: p => [1, 2, 3, 4].map(k => ({ name: String(k), x: p.x + 217 + (k - 1) * 52, y: p.y + 52 })),
+      draw: p => {
+        const zx = p.x + 186, zy = p.y + 8;
+        return `
+        <g class="part">
+          <rect x="${p.x - 26}" y="${p.y + 34}" width="30" height="10" rx="3" fill="#c9ced4"/><rect x="${p.x - 26}" y="${p.y + 76}" width="30" height="10" rx="3" fill="#c9ced4"/>
+          <rect x="${p.x}" y="${p.y}" width="130" height="120" rx="18" fill="#eef0f2" stroke="#b8bec6" stroke-width="2"/>
+          <text x="${p.x + 65}" y="${p.y + 52}" text-anchor="middle" class="usb-t">5V ⎓ 2A</text>
+          <text x="${p.x + 65}" y="${p.y + 72}" text-anchor="middle" class="usb-t sm">USB CHARGER</text>
+          <rect x="${p.x + 112}" y="${p.y + 44}" width="18" height="32" rx="3" fill="#2a2d31"/>
+          <path d="M${p.x + 130} ${p.y + 46} L${zx} ${zy + 4} M${p.x + 130} ${p.y + 74} L${zx} ${zy + 116}" stroke="rgba(220,205,255,.35)" stroke-dasharray="4 4"/>
+          <rect x="${zx}" y="${zy}" width="214" height="120" rx="14" fill="#1d1f23" stroke="#8d939a" stroke-width="2"/>
+          <rect x="${zx + 12}" y="${zy + 14}" width="190" height="56" rx="6" fill="#3a3e44"/>
+          ${[0, 1, 2, 3].map(k => `<rect x="${zx + 20 + k * 52}" y="${zy + 24}" width="22" height="40" rx="3" fill="#d9b24a"/><text x="${zx + 31 + k * 52}" y="${zy + 108}" text-anchor="middle" class="usb-n">${k + 1}</text>`).join('')}
+          <text x="${zx + 107}" y="${zy - 10}" text-anchor="middle" class="plabel small">${tr('منفذ USB (مكبّر)', 'USB port (zoomed in)')}</text>
+          ${p.label ? label(p.x + 65, p.y + 150, p.label) : ''}
+        </g>`;
+      },
+      elems: (p, n) => [{ t: 'V', a: n('1'), b: n('4'), V: p.dead ? 0.38 : 5.12, r: p.dead ? 400 : 0.25, id: p.id }],
+    },
+
+    // ── حساس حرارة NTC: مقاومته تقل كلما سخن، مع سخّان صغير وميزان حرارة ──
+    ntc: {
+      terms: p => [{ name: 'a', x: p.cx - 30, y: p.cy + 150 }, { name: 'b', x: p.cx + 30, y: p.cy + 150 }],
+      draw: p => {
+        const k = (p.t - 25) / 75;                                  // 0 بارد → 1 ساخن
+        const hot = `rgb(${Math.round(70 + 185 * k)},${Math.round(70 + 40 * k)},${Math.round(80 - 50 * k)})`;
+        const btn = (act, x, txt, on) => `<g class="tappable" data-act="${act}" data-part="${p.id}" role="button" tabindex="0" aria-label="${txt}">
+            <rect x="${x}" y="${p.cy + 30}" width="96" height="46" rx="12" fill="${on ? '#a66beb' : '#41474f'}"/>
+            <text x="${x + 48}" y="${p.cy + 59}" text-anchor="middle" class="sup-b">${txt}</text></g>`;
+        return `
+        <g class="part">
+          ${k > 0.05 ? `<circle cx="${p.cx - 120}" cy="${p.cy}" r="${60 + 40 * k}" fill="url(#gGlowWarm)" opacity="${0.25 + 0.6 * k}"/>` : ''}
+          <rect x="${p.cx - 170}" y="${p.cy - 26}" width="100" height="52" rx="10" fill="${hot}" stroke="#2a2d31" stroke-width="3"/>
+          ${[0, 1, 2, 3].map(i => `<path d="M${p.cx - 158 + i * 24} ${p.cy - 34} q6 -10 0 -20 q-6 -10 0 -20" stroke="rgba(255,190,120,${0.15 + 0.7 * k})" stroke-width="3" fill="none"/>`).join('')}
+          <text x="${p.cx - 120}" y="${p.cy + 48}" text-anchor="middle" class="plabel small">${tr('سخّان', 'Heater')}</text>
+          <path d="M${p.cx - 8} ${p.cy + 12} V${p.cy + 100} L${p.cx - 30} ${p.cy + 120} V${p.cy + 150}" class="lead metal"/>
+          <path d="M${p.cx + 8} ${p.cy + 12} V${p.cy + 100} L${p.cx + 30} ${p.cy + 120} V${p.cy + 150}" class="lead metal"/>
+          <ellipse cx="${p.cx}" cy="${p.cy}" rx="17" ry="20" fill="#2b5fa8" stroke="#163a6e" stroke-width="2"/>
+          <text x="${p.cx}" y="${p.cy + 5}" text-anchor="middle" class="ntc-t">10k</text>
+          <rect x="${p.cx + 60}" y="${p.cy - 62}" width="122" height="54" rx="10" fill="#17191c"/>
+          <rect x="${p.cx + 66}" y="${p.cy - 56}" width="110" height="42" rx="6" fill="#b9f0d6"/>
+          <text x="${p.cx + 121}" y="${p.cy - 26}" text-anchor="middle" class="ntc-temp">${Math.round(p.t)}°C</text>
+          ${btn('cool', p.cx + 40, tr('برّد −', 'Cool −'), false)}${btn('heat', p.cx + 146, tr('سخّن +', 'Heat +'), p.t > 25)}
+          ${p.label ? label(p.cx, p.cy - 40, p.label) : ''}
+        </g>`;
+      },
+      elems: (p, n) => [{ t: 'R', a: n('a'), b: n('b'), R: 10000 * Math.exp(3950 * (1 / (p.t + 273.15) - 1 / 298.15)), id: p.id }],
+    },
+
+    // ── مرحّل سيارة 12V: ملف (85، 86) ونقاط تلامس 30 / 87 / 87a ──
+    relay: {
+      terms: p => ['85', '86', '30', '87', '87a'].map((name, i) => ({ name, x: p.x + 20 + i * 52, y: p.y + 190 })),
+      draw: p => {
+        const arm = p.on ? `M${p.x + 150} ${p.y + 120} L${p.x + 206} ${p.y + 58}` : `M${p.x + 150} ${p.y + 120} L${p.x + 214} ${p.y + 104}`;
+        return `
+        <g class="part">
+          ${['85', '86', '30', '87', '87a'].map((nm, i) => `<rect x="${p.x + 15 + i * 52}" y="${p.y + 146}" width="10" height="44" fill="#c9ced4"/><text x="${p.x + 20 + i * 52}" y="${p.y + 222}" text-anchor="middle" class="relay-n">${nm}</text>`).join('')}
+          <rect x="${p.x}" y="${p.y}" width="250" height="150" rx="12" fill="rgba(30,32,36,.92)" stroke="#5b616a" stroke-width="2"/>
+          <rect x="${p.x + 22}" y="${p.y + 40}" width="70" height="86" rx="8" fill="#b9772f"/>
+          ${Array.from({ length: 9 }, (_, i) => `<line x1="${p.x + 22}" y1="${p.y + 46 + i * 9}" x2="${p.x + 92}" y2="${p.y + 46 + i * 9}" stroke="#7a4a1c" stroke-width="2"/>`).join('')}
+          ${p.on ? `<rect x="${p.x + 18}" y="${p.y + 36}" width="78" height="94" rx="10" fill="none" stroke="#a66beb" stroke-width="3" opacity=".8"/>` : ''}
+          <circle cx="${p.x + 214}" cy="${p.y + 52}" r="6" fill="#d9b24a"/><text x="${p.x + 232}" y="${p.y + 56}" class="relay-n sm">87</text>
+          <circle cx="${p.x + 222}" cy="${p.y + 106}" r="6" fill="#d9b24a"/><text x="${p.x + 232}" y="${p.y + 126}" class="relay-n sm">87a</text>
+          <path d="${arm}" stroke="#e6ebef" stroke-width="5" stroke-linecap="round"/>
+          <circle cx="${p.x + 150}" cy="${p.y + 120}" r="6" fill="#e6ebef"/>
+          <text x="${p.x + 125}" y="${p.y + 24}" text-anchor="middle" class="relay-n">RELAY 12V</text>
+          <g class="tappable" data-act="coil" data-part="${p.id}" role="button" tabindex="0" aria-label="${tr('شغّل أو أطفئ الملف', 'Switch the coil on or off')}">
+            <rect x="${p.x + 280}" y="${p.y + 40}" width="170" height="60" rx="14" fill="${p.on ? '#a66beb' : '#41474f'}"/>
+            <text x="${p.x + 365}" y="${p.y + 66}" text-anchor="middle" class="sup-b">${p.on ? tr('الملف: يعمل 12V', 'Coil: ON 12V') : tr('الملف: مطفأ', 'Coil: OFF')}</text>
+            <text x="${p.x + 365}" y="${p.y + 88}" text-anchor="middle" class="sup-sm">${tr('اضغط للتبديل', 'tap to switch')}</text>
+          </g>
+          ${p.label ? label(p.x + 125, p.y - 14, p.label) : ''}
+        </g>`;
+      },
+      elems: (p, n) => {
+        const e = [{ t: 'R', a: n('85'), b: n('86'), R: 85, id: p.id }];
+        if (p.on) e.push({ t: 'V', a: n('86'), b: n('85'), V: 12, r: 0.4 });
+        e.push({ t: 'R', a: n('30'), b: n(p.on ? '87' : '87a'), R: 0.05 });
+        return e;
+      },
     },
 
     // ── فيوز زجاجي ──

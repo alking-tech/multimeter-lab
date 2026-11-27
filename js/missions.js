@@ -168,6 +168,50 @@
       ],
     },
 
+    // ───────────────────────────── شاحن الجوال
+    {
+      id: 'usb', icon: '5V',
+      title: L('الشاحن لا يشحن', "The Charger Won't Charge"),
+      brief: L('الجوال لا يشحن. هل العطل في الشاحن أم في سلك الشحن؟ قِس جهد منفذ USB ثم افحص السلك بالاستمرارية.', "The phone won't charge. Is it the charger or the cable? Measure the USB port voltage, then test the cable for continuity."),
+      skills: [L('الجهد المستمر V⎓', 'DC voltage V⎓'), L('أطراف منفذ USB', 'USB port pins'), L('الاستمرارية', 'Continuity')],
+      setup() {
+        const fault = pick(['cable', 'charger']);
+        return {
+          h: 420,
+          parts: [
+            { type: 'usbCharger', id: 'CH', x: 60, y: 70, dead: fault === 'charger', label: tr('شاحن الجوال', 'Phone charger') },
+            { type: 'cable', id: 'CB', x: 130, y: 340, w: 380, color: '#e6e8eb', label: tr('سلك الشحن', 'Charging cable'), broken: fault === 'cable' },
+          ],
+          data: { fault },
+        };
+      },
+      tasks: [
+        { text: L('لفّ المفتاح إلى V⎓ على النطاق 20', 'Turn the dial to V⎓, range 20'), hint: L('شاحن الجوال يعطي حوالي 5V، فنطاق 20 هو الأنسب.', 'A phone charger gives about 5V, so the 20 range fits best.'), check: s => s.mode === 'VDC' },
+        { text: L('قِس جهد المنفذ: الأحمر على الطرف 1 والأسود على الطرف 4', 'Measure the port: red on pin 1, black on pin 4'), hint: L('في منفذ USB: الطرف 1 هو +5V والطرف 4 هو الأرضي (GND). الطرفان 2 و3 للبيانات.', 'In a USB port pin 1 is +5V and pin 4 is ground (GND). Pins 2 and 3 carry data.'), check: (s, sc) => {
+          const ok = s.mode === 'VDC' && onTerms(s, 'CH:1', 'CH:4') && valid(s);
+          if (ok) sc.data.v = Math.abs(s.value);
+          return ok;
+        } },
+        { text: L('افحص سلك الشحن بالاستمرارية •))): مجس على كل طرف', 'Test the charging cable on continuity •))): one probe on each end'), hint: L('صفارة = السلك سليم. OL بدون صوت = مقطوع من الداخل.', 'A beep means the cable is good. OL with no sound means it is broken inside.'), check: (s, sc) => {
+          const ok = s.mode === 'CONT' && on(s, 'CB') && !s.garbage;
+          if (ok) sc.data.cont = !s.ol;
+          return ok;
+        } },
+      ],
+      question: sc => ({
+        text: tr('أين العطل؟', 'Where is the fault?'),
+        choices: ch([[tr('سلك الشحن مقطوع', 'The cable is broken'), sc.data.fault === 'cable'], [tr('الشاحن لا يعطي جهداً', 'The charger gives no voltage'), sc.data.fault === 'charger'], [tr('لا يوجد عطل', 'There is no fault'), false]]),
+        why: sc.data.fault === 'cable'
+          ? tr('الشاحن أعطى حوالي 5V وهذا سليم، لكن السلك أعطى OL في الاستمرارية: المسار مقطوع داخله، فاستبدل السلك.', 'The charger gave about 5V, which is healthy, but the cable read OL on continuity: the path is broken inside, so replace the cable.')
+          : tr('السلك صفّر فهو سليم، لكن الشاحن أعطى أقل بكثير من 5V: الشاحن تالف، فاستبدل الشاحن.', 'The cable beeped so it is fine, but the charger read far below 5V: the charger is dead, so replace it.'),
+      }),
+      learned: [
+        L('منفذ USB يعطي 5V بين الطرف 1 (+) والطرف 4 (الأرضي).', 'A USB port gives 5V between pin 1 (+) and pin 4 (ground).'),
+        L('افحص المصدر بالجهد، والسلك بالاستمرارية: هكذا تعرف أي جزء هو العطلان.', 'Check the source with voltage and the cable with continuity: that tells you which part failed.'),
+        L('هذه طريقة التشخيص بالتجزئة: افحص كل جزء وحده حتى تجد العطل.', 'This is divide-and-conquer troubleshooting: test each part alone until you find the fault.'),
+      ],
+    },
+
     // ───────────────────────────── التيار
     {
       id: 'current', icon: 'A⎓',
@@ -246,6 +290,66 @@
         L('التوالي: المقاومات تُجمع، R = R1 + R2.', 'Series: resistances add, R = R1 + R2.'),
         L('التوازي: المقاومة الكلية أصغر من أصغر مقاومة، 1/R = 1/R1 + 1/R2.', 'Parallel: the total is smaller than the smallest, 1/R = 1/R1 + 1/R2.'),
         L('لا يمكنك قياس مقاومة واحدة بدقة وهي موصولة مع غيرها في الدائرة؛ افصل أحد طرفيها أولاً.', "You can't measure one resistor accurately while it is connected to others; lift one leg first."),
+      ],
+    },
+
+    // ───────────────────────────── التيار في التوازي
+    {
+      id: 'parallel', icon: 'I₁+I₂',
+      title: L('التيار في التوازي', 'Current in Parallel'),
+      brief: L('بطارية تغذّي فرعين على التوازي. قِس تيار كل فرع ثم التيار الكلي، واكتشف كيف يتوزّع التيار (قانون كيرشوف للتيار).', "A battery feeds two parallel branches. Measure each branch current, then the total, and discover how current splits (Kirchhoff's current law)."),
+      skills: [L('التيار A', 'Current A'), L('قانون كيرشوف للتيار', "Kirchhoff's current law"), L('التوازي', 'Parallel')],
+      warn: L('لقياس التيار أزل الوصلة وضع المجسين مكانها. لا تضع الجهاز على وضع التيار على طرفي البطارية.', 'To measure current, remove a jumper and put the probes in its place. Never put the meter on current across the battery.'),
+      setup() {
+        const [a, b] = shuffle([220, 330, 470]).slice(0, 2);
+        const Rp = (id, y, v, node) => ({ type: 'resistor', id, x: 380, y, nominal: v, actual: v * (1 + rnd(-0.02, 0.02)), label: `${id} = ${Parts.fmtOhms(v)}`, nodes: { a: node, b: 'ret' } });
+        const J = (id, x, y, a, b) => ({ type: 'jumper', id, x, y, tag: id, present: true, nodes: { a, b } });
+        return {
+          h: 450,
+          parts: [
+            { type: 'batteryBox', id: 'B', x: 40, y: 150, emf: rnd(9.2, 9.5), r: 0.6, nodes: { '+': 'top', '-': 'gnd' } },
+            J('J1', 260, 90, 'top', 'b1'), Rp('R1', 90, a, 'b1'),
+            J('J2', 260, 250, 'top', 'b2'), Rp('R2', 250, b, 'b2'),
+            J('J0', 300, 410, 'gnd', 'ret'),
+          ],
+          wires: [[[80, 138], [80, 90], [260, 90]], [[230, 90], [230, 250], [260, 250]], [[360, 90], [380, 90]], [[360, 250], [380, 250]],
+            [[600, 90], [620, 90], [620, 410], [400, 410]], [[600, 250], [620, 250]], [[300, 410], [80, 410], [80, 312]]],
+          data: {},
+        };
+      },
+      tasks: [
+        { text: L('لفّ المفتاح إلى A⎓ على النطاق 200m، والمجس الأحمر في VΩmA', 'Turn the dial to A⎓ 200m, red lead in VΩmA'), hint: L('التيارات هنا عشرات الملي أمبير.', 'The currents here are tens of milliamps.'), check: s => s.posId === 'a200m' && s.jack === 'V' },
+        { text: L('قِس تيار الفرع الأول: أزل الوصلة J1 وضع المجسين مكانها', 'Measure branch 1: remove jumper J1 and put the probes in its place'), hint: L('اضغط على الوصلة J1 لإزالتها، ثم مجس على كل طرف منها.', 'Tap jumper J1 to remove it, then one probe on each of its posts.'), check: (s, sc) => {
+          const ok = s.mode === 'ADC' && !sc.parts.find(p => p.id === 'J1').present && onTerms(s, 'J1:a', 'J1:b') && valid(s) && Math.abs(s.value) > 0.005;
+          if (ok) sc.data.I1 = Math.abs(s.value);
+          return ok;
+        } },
+        { text: L('أرجع J1، ثم قِس تيار الفرع الثاني مكان الوصلة J2', 'Put J1 back, then measure branch 2 in place of jumper J2'), hint: L('اضغط J1 لإرجاعها، ثم أزل J2 وقِس مكانها.', 'Tap J1 to replace it, then remove J2 and measure there.'), check: (s, sc) => {
+          const P = id => sc.parts.find(p => p.id === id).present;
+          const ok = s.mode === 'ADC' && P('J1') && !P('J2') && onTerms(s, 'J2:a', 'J2:b') && valid(s) && Math.abs(s.value) > 0.005;
+          if (ok) sc.data.I2 = Math.abs(s.value);
+          return ok;
+        } },
+        { text: L('أرجع J2، ثم قِس التيار الكلي مكان الوصلة J0 في السلك الراجع', 'Put J2 back, then measure the total current in place of J0 on the return wire'), hint: L('هنا يمر تيار الفرعين معاً.', 'The current of both branches passes here.'), check: (s, sc) => {
+          const P = id => sc.parts.find(p => p.id === id).present;
+          const ok = s.mode === 'ADC' && P('J1') && P('J2') && !P('J0') && onTerms(s, 'J0:a', 'J0:b') && valid(s) && Math.abs(s.value) > 0.01;
+          if (ok) sc.data.It = Math.abs(s.value);
+          return ok;
+        } },
+      ],
+      question: sc => {
+        const m = x => ((x || 0) * 1000).toFixed(1) + 'mA';
+        const { I1, I2, It } = sc.data;
+        return {
+          text: tr(`قست ${m(I1)} في الفرع الأول و${m(I2)} في الثاني و${m(It)} للكل. ما العلاقة؟`, `You measured ${m(I1)} in branch 1, ${m(I2)} in branch 2 and ${m(It)} in total. What is the relationship?`),
+          choices: ch([[tr('التيار الكلي = مجموع تيارات الفروع', 'Total = sum of the branch currents'), true], [tr('التيار نفسه في كل مكان', 'The current is the same everywhere'), false], [tr('التيار الكلي = الفرق بين الفرعين', 'Total = the difference between branches'), false], [tr('التيار الكلي = متوسط الفرعين', 'Total = the average of the branches'), false]]),
+          why: tr('قانون كيرشوف للتيار: التيار الداخل إلى نقطة تفرّع يساوي مجموع التيارات الخارجة منها. والفرع ذو المقاومة الأصغر يأخذ تياراً أكبر، لأن الجهد على الفرعين واحد.', "Kirchhoff's current law: the current into a junction equals the sum of the currents leaving it. The branch with the smaller resistance takes more current, because both branches have the same voltage."),
+        };
+      },
+      learned: [
+        L('في التوازي: الجهد واحد على كل الفروع، والتيار يتوزّع بينها.', 'In parallel: every branch has the same voltage, and the current splits between them.'),
+        L('قانون كيرشوف للتيار: التيار الكلي = مجموع تيارات الفروع.', "Kirchhoff's current law: total current = sum of the branch currents."),
+        L('الفرع ذو المقاومة الأصغر يمر فيه تيار أكبر (I = V ÷ R).', 'The branch with the smaller resistance carries more current (I = V ÷ R).'),
       ],
     },
 
@@ -471,6 +575,74 @@
         L('كثير من الحساسات (حرارة، ضوء) هي مقاومات تتغير قيمتها، ونقيسها على Ω.', 'Many sensors (heat, light) are resistors whose value changes; you measure them on Ω.'),
       ],
     },
+    // ───────────────────────────── حساس الحرارة
+    {
+      id: 'ntc', icon: '°C',
+      title: L('حساس الحرارة NTC', 'The NTC Heat Sensor'),
+      brief: L('الثرمستور NTC موجود في الشواحن والمكيّفات والسيارات. قِس مقاومته في حرارة الغرفة، ثم سخّنه وقِس مرة أخرى.', 'NTC thermistors are in chargers, air conditioners and cars. Measure it at room temperature, then heat it and measure again.'),
+      skills: [L('الحساسات', 'Sensors'), L('المقاومة Ω', 'Resistance Ω'), L('معامل الحرارة', 'Temperature coefficient')],
+      setup() {
+        return { h: 420, parts: [{ type: 'ntc', id: 'NTC', cx: 300, cy: 150, t: 25, label: tr('ثرمستور NTC 10k', 'NTC thermistor 10k') }], data: {} };
+      },
+      tasks: [
+        { text: L('لفّ المفتاح إلى Ω على النطاق 20k', 'Set Ω on the 20k range'), hint: L('قيمته 10kΩ عند 25°C.', 'It is 10kΩ at 25°C.'), check: s => s.mode === 'OHM' },
+        { text: L('قِس الثرمستور وهو في حرارة الغرفة (25°C)', 'Measure the thermistor at room temperature (25°C)'), hint: L('مجس على كل طرف. يجب أن تقرأ حوالي 10kΩ.', 'One probe on each leg. You should read about 10kΩ.'), check: (s, sc) => {
+          const p = sc.parts.find(x => x.id === 'NTC');
+          const ok = s.mode === 'OHM' && on(s, 'NTC') && valid(s) && p.t <= 25;
+          if (ok) sc.data.cold = s.value;
+          return ok;
+        } },
+        { text: L('سخّنه إلى 70°C أو أكثر بزر «سخّن +»، وراقب القراءة', 'Heat it to 70°C or more with “Heat +” and watch the reading'), hint: L('اترك المجسين على طرفيه واضغط «سخّن +» عدة مرات.', 'Keep the probes on and tap “Heat +” a few times.'), check: (s, sc) => {
+          const p = sc.parts.find(x => x.id === 'NTC');
+          const ok = s.mode === 'OHM' && on(s, 'NTC') && valid(s) && p.t >= 70;
+          if (ok) sc.data.hot = s.value;
+          return ok;
+        } },
+      ],
+      question: () => ({
+        text: tr('ماذا حدث لمقاومة الثرمستور NTC عندما سخن؟', 'What happened to the NTC resistance when it got hot?'),
+        choices: ch([[tr('نقصت كثيراً', 'It dropped a lot'), true], [tr('زادت', 'It rose'), false], [tr('لم تتغير', 'It did not change'), false], [tr('صارت OL', 'It went OL'), false]]),
+        why: tr('NTC تعني «معامل حرارة سالب»: كلما ارتفعت الحرارة نقصت المقاومة. الدائرة تقرأ هذه المقاومة فتعرف الحرارة، مثل حساس حرارة محرك السيارة أو حماية الشاحن من السخونة.', 'NTC means “negative temperature coefficient”: the hotter it gets, the lower its resistance. A circuit reads that resistance to know the temperature, like a car engine sensor or a charger’s overheat protection.'),
+      }),
+      learned: [
+        L('الثرمستور NTC: مقاومته تقل كلما ارتفعت الحرارة.', 'NTC thermistor: its resistance drops as temperature rises.'),
+        L('يوجد نوع PTC بالعكس: مقاومته تزيد مع الحرارة.', 'A PTC is the opposite: its resistance rises with temperature.'),
+        L('افحص الحساس بقياس مقاومته في حرارتين مختلفتين: إذا لم تتغير القراءة فهو تالف.', 'Test a sensor by measuring it at two temperatures: if the reading does not change, it is faulty.'),
+      ],
+    },
+
+    // ───────────────────────────── المرحّل
+    {
+      id: 'relay', icon: 'RLY',
+      title: L('المرحّل (الريليه)', 'The Relay'),
+      brief: L('مرحّل سيارة 12V: ملف صغير يحرّك مفتاحاً داخلياً يتحكم في دائرة كبيرة. افحص الملف ونقاط التلامس، ثم شغّل الملف ولاحظ ما يتغير.', 'A 12V car relay: a small coil moves an internal switch that controls a big circuit. Test the coil and the contacts, then energise the coil and see what changes.'),
+      skills: [L('المقاومة Ω', 'Resistance Ω'), L('الاستمرارية', 'Continuity'), L('المفاتيح الكهربائية', 'Electrical switches')],
+      warn: L('افحص مقاومة الملف والمرحّل مطفأ: القياس والملف يعمل يعطي قراءة خاطئة.', 'Measure the coil resistance with the relay off: measuring while it is energised gives a wrong reading.'),
+      setup() {
+        return { w: 680, h: 400, parts: [{ type: 'relay', id: 'RL', x: 60, y: 110, on: false, label: tr('مرحّل سيارة', 'Car relay') }], data: {} };
+      },
+      tasks: [
+        { text: L('لفّ المفتاح إلى Ω على النطاق 200', 'Set Ω on the 200 range'), hint: L('مقاومة ملف المرحّل عادة بين 50 و120Ω.', 'A relay coil is usually 50–120Ω.'), check: s => s.mode === 'OHM' },
+        { text: L('قِس مقاومة الملف بين الطرفين 85 و86', 'Measure the coil between pins 85 and 86'), hint: L('الملف مطفأ الآن، وهذا صحيح لقياس المقاومة.', 'The coil is off now, which is right for measuring resistance.'), check: (s, sc) => {
+          const ok = s.mode === 'OHM' && onTerms(s, 'RL:85', 'RL:86') && valid(s) && !sc.parts[0].on;
+          if (ok) sc.data.coil = s.value;
+          return ok;
+        } },
+        { text: L('على الاستمرارية •))): افحص بين 30 و87a والملف مطفأ', 'On continuity •))): test between 30 and 87a with the coil off'), hint: L('87a نقطة «مغلقة عادة» (NC): متصلة بـ30 والمرحّل مطفأ.', '87a is “normally closed” (NC): connected to 30 while the relay is off.'), check: (s, sc) => s.mode === 'CONT' && onTerms(s, 'RL:30', 'RL:87a') && !sc.parts[0].on && !s.ol && !s.garbage },
+        { text: L('شغّل الملف بالزر، ثم افحص بين 30 و87', 'Energise the coil with the button, then test between 30 and 87'), hint: L('عند تشغيل الملف يسحب الذراع إلى 87: نقطة «مفتوحة عادة» (NO).', 'Energising the coil pulls the arm to 87: the “normally open” (NO) contact.'), check: (s, sc) => s.mode === 'CONT' && onTerms(s, 'RL:30', 'RL:87') && sc.parts[0].on && !s.ol && !s.garbage },
+      ],
+      question: () => ({
+        text: tr('ما فائدة المرحّل في السيارة؟', 'What is a relay for in a car?'),
+        choices: ch([[tr('تيار صغير من مفتاح التحكم يشغّل دائرة كبيرة منفصلة', 'A small current from a control switch turns on a separate big circuit'), true], [tr('يرفع جهد البطارية', 'It raises the battery voltage'), false], [tr('يخزّن الكهرباء مثل المكثف', 'It stores charge like a capacitor'), false], [tr('يقيس التيار', 'It measures current'), false]]),
+        why: tr('مفتاح الأضواء في السيارة يمرّر تياراً صغيراً في ملف المرحّل فقط، والمرحّل بدوره يوصل التيار الكبير للأضواء أو المروحة عبر 30 و87. هكذا تبقى أسلاك المفاتيح رفيعة وآمنة.', 'The light switch only drives a small current through the relay coil; the relay then connects the big current to the lights or fan through 30 and 87. That keeps switch wiring thin and safe.'),
+      }),
+      learned: [
+        L('المرحّل = ملف (85، 86) + مفتاح (30 مشترك، 87 مفتوح عادة، 87a مغلق عادة).', 'A relay = a coil (85, 86) + a switch (30 common, 87 normally open, 87a normally closed).'),
+        L('ملف سليم: عشرات الأوم. OL على الملف = ملف مقطوع.', 'A healthy coil reads tens of ohms. OL on the coil = broken coil.'),
+        L('افحص نقاط التلامس بالاستمرارية في الحالتين: مطفأ وعامل.', 'Test the contacts on continuity in both states: off and energised.'),
+      ],
+    },
+
     // ───────────────────────────── السيارة
     {
       id: 'car', icon: '12V',

@@ -44,9 +44,9 @@
 
   const LV = (ar, en) => ({ ar, en });
   const LEVELS = [
-    { n: 1, t: LV('أساسيات القياس', 'Measuring basics'), ids: ['battery', 'outlet', 'resistors', 'cables', 'led'] },
-    { n: 2, t: LV('الدوائر والقوانين', 'Circuits & laws'), ids: ['current', 'series', 'divider', 'ohmlaw', 'kettle'] },
-    { n: 3, t: LV('القطع الإلكترونية', 'Electronic components'), ids: ['capacitor', 'transistor', 'sensors'] },
+    { n: 1, t: LV('أساسيات القياس', 'Measuring basics'), ids: ['battery', 'outlet', 'resistors', 'cables', 'led', 'usb'] },
+    { n: 2, t: LV('الدوائر والقوانين', 'Circuits & laws'), ids: ['current', 'series', 'parallel', 'divider', 'ohmlaw', 'kettle'] },
+    { n: 3, t: LV('القطع الإلكترونية', 'Electronic components'), ids: ['capacitor', 'transistor', 'sensors', 'ntc', 'relay'] },
     { n: 4, t: LV('تطبيقات وتشخيص', 'Real world & troubleshooting'), ids: ['car', 'analog', 'flashlight'] },
   ];
   const levelOf = id => (LEVELS.find(l => l.ids.includes(id)) || { n: 1 }).n;
@@ -229,8 +229,8 @@
   }
 
   // ── مكتبة المكونات (عمود المختبر) ──
-  const LIB_COMP = { battery9: 'battery', batteryBox: 'battery', aaPack: 'battery', carBattery: 'battery', resistor: 'resistor', diode: 'diode', led: 'led', lamp: 'lamp', switch: 'switch', capacitor: 'capacitor', transistor: 'transistor', pot: 'pot', ldr: 'ldr', fuse: 'fuse' };
-  const LIB_OTHER = { outlet: [LV('مقبس كهرباء', 'Wall socket'), 'bolt'], cable: [LV('سلك', 'Cable'), 'wire'], supply: [LV('مصدر متغير', 'Power supply'), 'battery'], dutBoard: [LV('لوحة دائرة', 'Circuit board'), 'wrench'], heater: [LV('سخان', 'Heater'), 'flame'], jumper: [LV('وصلة', 'Jumper'), 'wire'] };
+  const LIB_COMP = { battery9: 'battery', batteryBox: 'battery', aaPack: 'battery', carBattery: 'battery', resistor: 'resistor', diode: 'diode', led: 'led', lamp: 'lamp', switch: 'switch', capacitor: 'capacitor', transistor: 'transistor', pot: 'pot', ldr: 'ldr', fuse: 'fuse', ntc: 'ntc', relay: 'relay' };
+  const LIB_OTHER = { outlet: [LV('مقبس كهرباء', 'Wall socket'), 'bolt'], cable: [LV('سلك', 'Cable'), 'wire'], supply: [LV('مصدر متغير', 'Power supply'), 'battery'], dutBoard: [LV('لوحة دائرة', 'Circuit board'), 'wrench'], heater: [LV('سخان', 'Heater'), 'flame'], jumper: [LV('وصلة', 'Jumper'), 'wire'], usbCharger: [LV('شاحن USB', 'USB charger'), 'battery'] };
   function renderLibrary() {
     const box = $('#libList');
     if (!S.scene) { box.innerHTML = ''; return; }
@@ -794,6 +794,9 @@
       case 'potUp': p.pos = Math.min(1, Math.round((p.pos + 0.1) * 10) / 10); break;
       case 'potDown': p.pos = Math.max(0, Math.round((p.pos - 0.1) * 10) / 10); break;
       case 'light': p.light = !p.light; break;
+      case 'heat': p.t = Math.min(100, p.t + 15); break;
+      case 'cool': p.t = Math.max(25, p.t - 15); break;
+      case 'coil': p.on = !p.on; break;
     }
     Sound.click();
     const focusAct = act.dataset.act, focusPart = act.dataset.part;
@@ -924,7 +927,7 @@
         if (S.exam) toast(tr(`بدأ الاختبار: ${S.exam.title}. لديك ${Math.round(examLeft() / 60)} دقيقة.`, `Exam started: ${S.exam.title}. You have ${Math.round(examLeft() / 60)} minutes.`), 'warn');
         else if (prevId) toast(tr('أنهى المعلم الاختبار.', 'The teacher ended the exam.'), 'info');
         if (S.view === 'home') renderHome();
-        else if (S.exam && (['laws', 'progress', 'components', 'experiments', 'paths', 'path', 'resources', 'about'].includes(S.view) || (S.mission && !S.exam.missions.includes(S.mission.id)))) go('home');
+        else if (S.exam && (['laws', 'progress', 'components', 'experiments', 'paths', 'path', 'resources', 'about', 'quiz', 'glossary'].includes(S.view) || (S.mission && !S.exam.missions.includes(S.mission.id)))) go('home');
       }
     } catch (e) { /* offline */ }
     renderStudentChip(); tickExam();
@@ -980,7 +983,7 @@
   }
 
   // ════════════════════════════════ التوجيه واللغة
-  const VIEWS = ['home', 'lab', 'laws', 'progress', 'components', 'experiments', 'paths', 'path', 'resources', 'about'];
+  const VIEWS = ['home', 'lab', 'laws', 'progress', 'components', 'experiments', 'paths', 'path', 'resources', 'about', 'quiz', 'glossary'];
   function go(hash) { if (location.hash !== '#' + hash) location.hash = hash; else route(); }
   function showView(v) {
     S.view = v;
@@ -990,7 +993,7 @@
     const cur = $('#' + v);
     cur.classList.remove('view-in'); void cur.offsetWidth; cur.classList.add('view-in');
     document.body.dataset.view = v;
-    const navOf = { path: 'paths', laws: 'resources', components: 'resources', progress: 'resources' }[v] || v;
+    const navOf = { path: 'paths', quiz: 'paths', laws: 'resources', components: 'resources', progress: 'resources', glossary: 'resources' }[v] || v;
     $$('.nav [data-nav]').forEach(a => { if (a.dataset.nav === navOf) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current'); });
     $('#progBtn').classList.toggle('on', v === 'progress');
   }
@@ -1037,6 +1040,15 @@
       showView('path'); S.scene = null; S.mission = null;
       Pages.renderPath($('#path'), pid, les ? (les in { tour: 1, laws: 1, components: 1 } ? '@' + les : les) : null);
       if (!same || matchMedia('(max-width: 720px)').matches) window.scrollTo(0, 0);
+    } else if (h.startsWith('quiz-') && !inExam()) {
+      if (S.view !== 'quiz') Learn.resetQuiz();
+      showView('quiz'); S.scene = null; S.mission = null;
+      Learn.renderQuiz($('#quiz'), h.slice(5));
+      window.scrollTo(0, 0);
+    } else if (h === 'glossary' && !inExam()) {
+      showView('glossary'); S.scene = null; S.mission = null;
+      Learn.renderGlossary($('#glossary'));
+      window.scrollTo(0, 0);
     } else if (h === 'resources' && !inExam()) {
       showView('resources'); S.scene = null; S.mission = null;
       Pages.renderResources($('#resources'), { teacher: S.server });
@@ -1068,7 +1080,8 @@
     else if (S.view === 'laws') Laws.render($('#laws'));
     else if (S.view === 'progress') Progress.render($('#progress'));
     else if (S.view === 'components') Components.render($('#components'));
-    else if (['experiments', 'paths', 'path', 'resources', 'about'].includes(S.view)) routeNow();
+    else if (['experiments', 'paths', 'path', 'resources', 'about', 'glossary'].includes(S.view)) routeNow();
+    else if (S.view === 'quiz') Learn.renderQuiz($('#quiz'), location.hash.slice(6));
     else if (S.view === 'lab' && S.scene) {
       if (S.question) S.question = S.mission.question(S.scene);
       renderBench(); renderPanel(); renderFuses(); renderLibrary(); paintLabHead();

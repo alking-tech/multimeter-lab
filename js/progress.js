@@ -15,13 +15,13 @@
   };
 
   const SKILLS = [
-    { t: L('الجهد V', 'Voltage V'), m: ['battery', 'outlet', 'divider', 'car'] },
-    { t: L('التيار A', 'Current A'), m: ['current', 'ohmlaw'] },
+    { t: L('الجهد V', 'Voltage V'), m: ['battery', 'outlet', 'divider', 'car', 'usb'] },
+    { t: L('التيار A', 'Current A'), m: ['current', 'ohmlaw', 'parallel'] },
     { t: L('المقاومة Ω', 'Resistance Ω'), m: ['resistors', 'series', 'kettle'] },
-    { t: L('الاستمرارية والدايود', 'Continuity & diodes'), m: ['cables', 'led'] },
-    { t: L('القوانين', 'The laws'), m: ['ohmlaw', 'series', 'divider', 'kettle'] },
-    { t: L('التشخيص', 'Troubleshooting'), m: ['flashlight', 'car', 'analog'] },
-    { t: L('القطع الإلكترونية', 'Electronic components'), m: ['capacitor', 'transistor', 'sensors'] },
+    { t: L('الاستمرارية والدايود', 'Continuity & diodes'), m: ['cables', 'led', 'usb', 'relay'] },
+    { t: L('القوانين', 'The laws'), m: ['ohmlaw', 'series', 'parallel', 'divider', 'kettle'] },
+    { t: L('التشخيص', 'Troubleshooting'), m: ['flashlight', 'car', 'analog', 'usb'] },
+    { t: L('القطع الإلكترونية', 'Electronic components'), m: ['capacitor', 'transistor', 'sensors', 'ntc', 'relay'] },
   ];
 
   const BADGES = [
@@ -37,6 +37,8 @@
     { id: 'bilingual', ic: 'globe', t: L('ثنائي اللغة', 'Bilingual'), d: L('جرّب الواجهة بالإنجليزية', 'Try the interface in English'), ok: c => (c.s.lang || 0) >= 1 },
     { id: 'persist', ic: 'refresh', t: L('المثابر', 'Persistent'), d: L('أعد مهمة لتحسين نتيجتك', 'Retry a mission to improve'), ok: c => (c.s.retry || 0) >= 1 },
     { id: 'half', ic: 'flame', t: L('منتصف الطريق', 'Halfway there'), d: L('أنهِ نصف المهام', 'Finish half the missions'), ok: c => c.done >= Math.ceil(c.total / 2) },
+    { id: 'quiz1', ic: 'target', t: L('اجتاز الاختبار', 'Quiz passer'), d: L('اجتز اختبار أي مسار', 'Pass any path quiz'), ok: c => c.quiz >= 1 },
+    { id: 'quizall', ic: 'star', t: L('سيّد المسارات', 'Path master'), d: L('اجتز اختبارات المسارات الأربعة', 'Pass all four path quizzes'), ok: c => c.quiz >= 4 },
     { id: 'all', ic: 'cap', t: L('خبير الملتيميتر', 'Multimeter expert'), d: L('أنهِ كل المهام', 'Finish every mission'), ok: c => c.done >= c.total },
     { id: 'stars', ic: 'trophy', t: L('النجوم كاملة', 'All the stars'), d: L('اجمع كل النجوم', 'Collect every star'), ok: c => c.stars >= c.total * 3 },
   ];
@@ -52,6 +54,7 @@
       mistakes: vals.reduce((a, v) => a + (v.mistakes || 0), 0),
       secs: vals.reduce((a, v) => a + (v.secs || 0), 0),
       build: Builder.doneCount(),
+      quiz: Object.values(load('quiz', {})).filter(v => v >= 4).length,
     };
   }
 

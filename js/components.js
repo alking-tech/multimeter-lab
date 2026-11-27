@@ -22,6 +22,8 @@
     fuse: `<path d="M4 40H28M92 40H116" ${lead}/><rect x="28" y="30" width="12" height="20" rx="3" fill="#c9ced4"/><rect x="80" y="30" width="12" height="20" rx="3" fill="#c9ced4"/><rect x="40" y="32" width="40" height="16" rx="3" fill="rgba(220,235,245,.2)" stroke="rgba(220,235,245,.6)"/><path d="M40 40H80" stroke="#c9ced4" stroke-width="1.5"/>`,
     lamp: `<path d="M52 66V78M68 66V78" ${lead}/><circle cx="60" cy="28" r="20" fill="rgba(255,243,176,.35)" stroke="rgba(235,244,248,.8)" stroke-width="2"/><rect x="50" y="46" width="20" height="20" rx="3" fill="#b7bec6"/><path d="M54 30l3-5 3 5 3-5 3 5" stroke="#e9b949" stroke-width="2" fill="none"/>`,
     switch: `<path d="M6 46H32M88 46H114" ${lead}/><rect x="30" y="34" width="60" height="24" rx="6" fill="#2c3035"/><circle cx="44" cy="46" r="4" fill="#c9ced4"/><circle cx="76" cy="46" r="4" fill="#c9ced4"/><path d="M44 46L74 28" stroke="#e9c46a" stroke-width="4" stroke-linecap="round"/>`,
+    ntc: `<path d="M54 50V78M66 50V78" ${lead}/><ellipse cx="60" cy="34" rx="15" ry="18" fill="#2b5fa8" stroke="#163a6e" stroke-width="2"/><text x="60" y="38" text-anchor="middle" font-size="8" font-weight="700" fill="#e6efff">10k</text>`,
+    relay: `<path d="M30 62V78M46 62V78M62 62V78M78 62V78M94 62V78" ${lead}/><rect x="22" y="8" width="80" height="56" rx="6" fill="#26292e" stroke="#5b616a"/><rect x="30" y="18" width="24" height="36" rx="4" fill="#b9772f"/><path d="M66 46L88 26" stroke="#e6ebef" stroke-width="3" stroke-linecap="round"/><circle cx="66" cy="46" r="3" fill="#e6ebef"/><circle cx="90" cy="24" r="3" fill="#d9b24a"/>`,
     battery: `<rect x="38" y="16" width="44" height="58" rx="6" fill="#f59a2c"/><rect x="38" y="16" width="44" height="14" rx="5" fill="#1d1f22"/><rect x="46" y="6" width="10" height="10" rx="2" fill="#c7cbd1"/><rect x="64" y="6" width="12" height="10" rx="2" fill="#c7cbd1"/><text x="60" y="58" text-anchor="middle" font-size="14" font-weight="800" fill="#1d1f22">9V</text>`,
   };
   const s = 'stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"';
@@ -36,6 +38,8 @@
     fuse: `<rect x="34" y="14" width="52" height="16" rx="2" ${s}/><path d="M6 22H114" ${s}/>`,
     lamp: `<circle cx="60" cy="22" r="14" ${s}/><path d="M6 22H46M74 22H114M50 12l20 20M70 12L50 32" ${s}/>`,
     switch: `<path d="M6 30H40M80 30H114M40 30L76 12" ${s}/><circle cx="40" cy="30" r="3" fill="currentColor"/><circle cx="80" cy="30" r="3" fill="currentColor"/>`,
+    ntc: `<rect x="36" y="14" width="48" height="16" rx="2" ${s}/><path d="M6 22H36M84 22H114M32 38L88 6M88 6h-10" ${s}/><text x="90" y="40" font-size="10" fill="currentColor">−t°</text>`,
+    relay: `<rect x="8" y="10" width="26" height="24" ${s}/><path d="M8 22H2M34 22H40M14 16l14 12" ${s}/><path d="M60 34H74L100 18M100 10H118M100 34H118M74 34" ${s}/><path d="M21 10V4H86V14" stroke="currentColor" stroke-width="1.5" stroke-dasharray="3 3" fill="none"/>`,
     battery: `<path d="M6 22H52M68 22H114M52 6V38M60 14V30M68 6V38M76 14V30" ${s}/><text x="44" y="10" font-size="10" fill="currentColor">+</text>`,
   };
 
@@ -100,6 +104,18 @@
       test: L('الاستمرارية على طرفيه وهو ON ثم OFF.', 'Continuity across it in ON, then OFF.'),
       expect: L('ON: صفارة. OFF: OL.', 'ON: beep. OFF: OL.'),
       fault: L('لا يصفّر على ON = نقاط التلامس تالفة.', 'No beep on ON = worn contacts.') },
+    { id: 'ntc', name: L('حساس حرارة NTC', 'NTC thermistor'), mode: 'Ω', mission: 'ntc',
+      what: L('مقاومة تتغير مع الحرارة: كلما سخنت قلّت قيمتها. تستخدم لقياس الحرارة وحماية الأجهزة.', 'A resistor that changes with temperature: the hotter it gets, the lower its value. Used to sense heat and protect devices.'),
+      know: L('حبة صغيرة غالباً سوداء أو زرقاء على طرفين، مكتوب عليها قيمتها عند 25°C مثل 10k.', 'A small black or blue bead on two legs, marked with its value at 25°C, such as 10k.'),
+      test: L('Ω على طرفيه في حرارة الغرفة، ثم سخّنه قليلاً وقِس مرة أخرى.', 'Ω across it at room temperature, then warm it slightly and measure again.'),
+      expect: L('قريب من القيمة المكتوبة عند 25°C، وتنخفض القراءة عند التسخين.', 'Close to its rated value at 25°C, and the reading drops when warmed.'),
+      fault: L('القراءة لا تتغير مع الحرارة، أو OL = تالف.', 'The reading does not change with heat, or OL = faulty.') },
+    { id: 'relay', name: L('المرحّل (ريليه)', 'Relay'), mode: 'Ω •)))', mission: 'relay',
+      what: L('مفتاح يعمل بمغناطيس كهربائي: تيار صغير في الملف يحرّك نقاط تلامس تتحكم في تيار كبير.', 'A switch worked by an electromagnet: a small coil current moves contacts that control a large current.'),
+      know: L('صندوق صغير بأطراف مرقّمة: 85 و86 للملف، و30 و87 و87a لنقاط التلامس.', 'A small box with numbered pins: 85 and 86 for the coil, 30, 87 and 87a for the contacts.'),
+      test: L('Ω على الملف (85–86)، ثم الاستمرارية بين 30 و87a، وبين 30 و87 والملف يعمل.', 'Ω across the coil (85–86), then continuity 30–87a, and 30–87 with the coil energised.'),
+      expect: L('الملف عشرات الأوم. مطفأ: 30–87a يصفّر. عامل: 30–87 يصفّر.', 'Coil: tens of ohms. Off: 30–87a beeps. On: 30–87 beeps.'),
+      fault: L('OL على الملف = ملف مقطوع. لا صفارة على 87 والملف يعمل = نقاط محترقة.', 'OL on the coil = broken coil. No beep on 87 when on = burnt contacts.') },
     { id: 'battery', name: L('البطارية', 'Battery'), mode: 'V⎓', mission: 'battery',
       what: L('مصدر جهد مستمر يحوّل الطاقة الكيميائية إلى كهربائية.', 'A DC voltage source turning chemical energy into electricity.'),
       know: L('مكتوب عليها الجهد (1.5V، 9V، 12V) والقطب الموجب (+).', 'Marked with its voltage (1.5V, 9V, 12V) and the positive (+) terminal.'),

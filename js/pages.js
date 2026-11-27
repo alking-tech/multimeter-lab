@@ -61,15 +61,15 @@
     { id: 'beginner', art: 'meter', lv: 1,
       level: L('المستوى المبتدئ', 'Beginner'), title: L('التعرّف على الملتيميتر', 'Getting to know the multimeter'),
       brief: L('التعرّف على الجهاز وأجزائه وكيفية استخدامه، ثم أول قياساتك الحقيقية.', 'Meet the meter and its parts, then take your first real readings.'),
-      lessons: ['@tour', '@laws', 'battery', 'outlet', 'resistors', 'cables', 'led'] },
+      lessons: ['@tour', '@laws', 'battery', 'outlet', 'resistors', 'cables', 'led', 'usb'] },
     { id: 'intermediate', art: 'resistor', lv: 2,
       level: L('المستوى المتوسط', 'Intermediate'), title: L('الجهد والتيار والمقاومة', 'Voltage, current & resistance'),
-      brief: L('قياس التيار على التوالي، ومقسّم الجهد، وقانون أوم برسم بياني، وأجهزة المنزل.', 'Current in series, voltage dividers, Ohm’s law on a chart and household appliances.'),
-      lessons: ['current', 'series', 'divider', 'ohmlaw', 'kettle'] },
+      brief: L('قياس التيار على التوالي والتوازي، ومقسّم الجهد، وقانون أوم برسم بياني، وأجهزة المنزل.', 'Current in series and parallel, voltage dividers, Ohm’s law on a chart and household appliances.'),
+      lessons: ['current', 'series', 'parallel', 'divider', 'ohmlaw', 'kettle'] },
     { id: 'advanced', art: 'scope', lv: 3,
       level: L('المستوى المتقدم', 'Advanced'), title: L('تحليل الدوائر واكتشاف الأعطال', 'Circuit analysis & fault-finding'),
-      brief: L('المكثف والترانزستور والحساسات، ثم تشخيص أعطال حقيقية في السيارة والكشاف والجهاز التناظري.', 'Capacitors, transistors and sensors, then real fault-finding in a car, a flashlight and with an analog meter.'),
-      lessons: ['@components', 'capacitor', 'transistor', 'sensors', 'car', 'analog', 'flashlight'] },
+      brief: L('المكثف والترانزستور والحساسات والمرحّل، ثم تشخيص أعطال حقيقية في السيارة والكشاف والجهاز التناظري.', 'Capacitors, transistors, sensors and relays, then real fault-finding in a car, a flashlight and with an analog meter.'),
+      lessons: ['@components', 'capacitor', 'transistor', 'sensors', 'ntc', 'relay', 'car', 'analog', 'flashlight'] },
     { id: 'free', art: 'board', lv: 0,
       level: L('الممارسة الحرة', 'Free practice'), title: L('جرّب بلا قيود', 'Experiment freely'),
       brief: L('نفّذ تجاربك الخاصة: مختبر حر بجهاز رقمي أو تناظري، وورشة تبني فيها دوائرك بنفسك.', 'Run your own experiments: a free lab with a digital or analog meter, and a workshop where you build your own circuits.'),
@@ -77,7 +77,7 @@
   ];
 
   // صورة الدرس: شكل القطعة الأساسية في المهمة إن وجدت
-  const LOOK_OF = { battery: 'battery', resistors: 'resistor', cables: 'switch', led: 'led', current: 'lamp', series: 'resistor', divider: 'resistor', ohmlaw: 'resistor', capacitor: 'capacitor', transistor: 'transistor', sensors: 'ldr', car: 'battery', flashlight: 'lamp', build: 'led' };
+  const LOOK_OF = { battery: 'battery', resistors: 'resistor', cables: 'switch', led: 'led', current: 'lamp', series: 'resistor', divider: 'resistor', ohmlaw: 'resistor', capacitor: 'capacitor', transistor: 'transistor', sensors: 'ldr', car: 'battery', flashlight: 'lamp', build: 'led', parallel: 'resistor', ntc: 'ntc', relay: 'relay' };
 
   let ctx = null;   // { progress, stats, tourSeen, levelOf, stars, inExam }
   function setContext(c) { ctx = c; }
@@ -111,7 +111,7 @@
     return `<a class="path-card ${compact ? 'compact' : ''} ${start ? 'start' : ''}" href="#path-${P.id}" data-lv="${P.lv}">
       <div class="pc-art">${ART[P.art]}${start ? `<span class="pc-ribbon">${icon('play')} ${tr('ابدأ هنا', 'Start here')}</span>` : ''}</div>
       <div class="pc-body">
-        <span class="pc-level">${esc(T(P.level))}</span>
+        <span class="pc-level">${esc(T(P.level))}${Learn.passed(P.id) ? ` <span class="pc-badge" title="${tr('اجتاز اختبار المسار', 'Path quiz passed')}">${icon('trophy')}</span>` : ''}</span>
         <h3>${esc(T(P.title))}</h3>
         <p>${esc(T(P.brief))}</p>
         <div class="pc-meta"><span>${icon('book')} ${st.total} ${tr('دروس', 'lessons')}</span><span>${icon('clock')} ~${st.mins} ${tr('د', 'min')}</span></div>
@@ -185,6 +185,8 @@
           <div class="ls-prog"><div class="bar"><span style="--w:${Math.round(st.done / st.total * 100)}%"></span></div><small>${st.done}/${st.total}</small></div>
           <ol class="ls-list">${st.ls.map((l, k) => `<li><a class="${l === cur ? 'on' : ''} ${l.done ? 'done' : ''}" href="#path-${P.id}:${l.key.replace('@', '')}" ${l === cur ? 'aria-current="true"' : ''}>
             <span class="ls-n">${l.done ? icon('check') : k + 1}</span><span class="ls-t">${esc(l.title)}</span>${l === cur ? icon('play', 'ls-ic') : icon('arrow', 'ls-ic flip-rtl')}</a></li>`).join('')}</ol>
+          <a class="ls-quiz ${Learn.passed(P.id) ? 'done' : ''}" href="#quiz-${P.id}"><span class="ls-n">${icon(Learn.passed(P.id) ? 'check' : 'trophy')}</span>
+            <span class="ls-t"><b>${tr('اختبار المسار', 'Path quiz')}</b><small>${Learn.passed(P.id) ? tr(`اجتزته: ${Learn.scores()[P.id]}/5`, `Passed: ${Learn.scores()[P.id]}/5`) : tr('5 أسئلة، والنجاح من 4', '5 questions, pass with 4')}</small></span>${icon('arrow', 'ls-ic flip-rtl')}</a>
           <a class="btn primary block" href="${cur.href}">${icon('play')} ${tr('ابدأ الدرس', 'Start the lesson')}</a>
           <div class="ls-other">${PATHS.filter(p => p !== P).map(p => `<a href="#path-${p.id}">${esc(T(p.level))}</a>`).join('')}</div>
         </aside>
@@ -204,7 +206,8 @@
         ${tile('#tour', 'eye', tr('تعرّف على الجهاز', 'Meet the meter'), tr('جولة تفاعلية تشرح كل جزء في الجهاز خطوة بخطوة.', 'An interactive tour of every part of the meter, step by step.'))}
         ${tile('#guide', 'book', tr('دليل الجهاز', 'Meter guide'), tr('كيف تستخدم المختبر، النطاقات، الجهاز التناظري، وشيفرة ألوان المقاومات.', 'Using the lab, the ranges, the analog meter and the resistor colour code.'), '', 'data-open-guide')}
         ${tile('#laws', 'sigma', tr('القوانين', 'The laws'), tr('الفرق بين الجهد والتيار والمقاومة، وقانون أوم والقدرة، مع حاسبات.', "Voltage vs current vs resistance, Ohm's law and power, with calculators."), '<span class="chip">V = I × R</span>')}
-        ${tile('#components', 'resistor', tr('القطع الإلكترونية', 'Electronic components'), tr('11 قطعة: شكلها ورمزها وكيف تفحصها والقراءة السليمة وأعطالها.', '11 parts: looks, symbol, how to test, the healthy reading and faults.'), `<span class="chip">${tr('مكتبة', 'Library')}</span>`)}
+        ${tile('#components', 'resistor', tr('القطع الإلكترونية', 'Electronic components'), tr(`${Components.PARTS.length} قطعة: شكلها ورمزها وكيف تفحصها والقراءة السليمة وأعطالها.`, `${Components.PARTS.length} parts: looks, symbol, how to test, the healthy reading and faults.`), `<span class="chip">${tr('مكتبة', 'Library')}</span>`)}
+        ${tile('#glossary', 'globe', tr('قاموس المصطلحات', 'Glossary'), tr(`${Learn.GLOSSARY.length} مصطلحاً بالعربي والإنجليزي مع الرمز والمعنى.`, `${Learn.GLOSSARY.length} terms in Arabic and English with symbol and meaning.`), '<span class="chip">Voltage = الجهد</span>')}
         ${tile('#progress', 'trophy', tr('تقدّمي وشاراتي', 'My progress & badges'), tr('المهارات، والشارات، وسجل المهام، والشهادة عند الإكمال.', 'Skills, badges, mission history and your certificate when complete.'))}
       </div>
       <section class="safety">
