@@ -7,15 +7,15 @@
  */
 :root {
   --mat: #0b1917;
-  --mat-2: #15302c;
+  --mat-2: #1a3a35;
   --mat-dot: rgba(214, 236, 228, .05);
-  --surface: #152d29;
-  --surface-2: #1b3833;
-  --surface-3: #234640;
-  --line: rgba(220, 238, 231, .19);
-  --line-2: rgba(220, 238, 231, .30);
+  --surface: #1c3b36;
+  --surface-2: #234640;
+  --surface-3: #2c564f;
+  --line: rgba(180, 235, 210, .26);
+  --line-2: rgba(180, 235, 210, .38);
   --ink: #e8f0ec;
-  --muted: #9db8af;
+  --muted: #adc9c0;
   --yellow: #f5b41a;
   --yellow-2: #ffc93d;
   --yellow-ink: #2a1e00;
@@ -194,7 +194,7 @@ body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-a
 .mcard {
   --tilt-x: 0deg; --tilt-y: 0deg;
   position: relative; display: flex; flex-direction: column; gap: 10px; padding: 16px; border-radius: var(--r);
-  background: linear-gradient(170deg, var(--surface-3), var(--surface)); border: 1px solid var(--line);
+  background: linear-gradient(170deg, var(--surface-3), var(--surface)); border: 1.5px solid rgba(180, 235, 210, .34);
   box-shadow: var(--shadow); text-decoration: none; overflow: hidden;
   transform: perspective(700px) rotateX(var(--tilt-x)) rotateY(var(--tilt-y));
   transition: transform .2s, border-color .2s, box-shadow .2s;
@@ -203,8 +203,8 @@ body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-a
 .mcard:hover { border-color: rgba(245, 180, 26, .5); box-shadow: var(--shadow), 0 16px 34px -14px rgba(0, 0, 0, .7); }
 .mcard:hover::before { opacity: 1; }
 .mcard:focus-visible { outline-offset: 3px; }
-.mcard.done { border-color: rgba(76, 195, 138, .35); }
-.mcard.free { background: linear-gradient(170deg, var(--surface-2), var(--surface)); border: 1.5px dashed rgba(245, 180, 26, .5); box-shadow: var(--shadow); }
+.mcard.done { border-color: rgba(76, 195, 138, .75); }
+.mcard.free { background: linear-gradient(170deg, rgba(245, 180, 26, .16), rgba(245, 180, 26, .04) 55%), var(--surface); border: 2px dashed rgba(245, 180, 26, .8); box-shadow: var(--shadow); }
 .mcard.free:hover { border-color: rgba(245, 180, 26, .85); }
 .mc-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
 .mc-lcd { direction: ltr; min-width: 52px; text-align: center; padding: 3px 10px; border-radius: 8px; background: var(--lcd); color: var(--lcd-ink); font: italic 700 15px var(--f-mono); box-shadow: inset 0 0 0 2px #17191c; }
@@ -347,7 +347,7 @@ body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-a
 @keyframes pulse { to { opacity: .35; } }
 
 /* ───────── panel ───────── */
-.panel { background: linear-gradient(175deg, var(--surface-3), var(--surface) 40%); border: 1px solid var(--line); border-radius: var(--r); padding: 16px; display: grid; gap: 12px; box-shadow: var(--shadow); }
+.panel { background: linear-gradient(175deg, var(--surface-3), var(--surface) 40%); border: 1.5px solid rgba(180, 235, 210, .32); border-radius: var(--r); padding: 16px; display: grid; gap: 12px; box-shadow: var(--shadow); }
 .panel-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
 .panel-head h2 { font-size: 19px; display: flex; align-items: center; gap: 10px; }
 .pnum { min-width: 30px; height: 30px; padding: 0 6px; border-radius: 9px; display: inline-grid; place-items: center; background: var(--lcd); color: var(--lcd-ink); font: italic 700 14px var(--f-mono); box-shadow: inset 0 0 0 2px #17191c; flex: none; }
