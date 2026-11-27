@@ -21,6 +21,7 @@
     { t: L('الاستمرارية والدايود', 'Continuity & diodes'), m: ['cables', 'led'] },
     { t: L('القوانين', 'The laws'), m: ['ohmlaw', 'series', 'divider', 'kettle'] },
     { t: L('التشخيص', 'Troubleshooting'), m: ['flashlight', 'car', 'analog'] },
+    { t: L('القطع الإلكترونية', 'Electronic components'), m: ['capacitor', 'transistor', 'sensors'] },
   ];
 
   const BADGES = [

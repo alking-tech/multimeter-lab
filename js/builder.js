@@ -307,7 +307,9 @@
   };
 
   window.Builder = {
-    MISSION, CHALLENGES,
+    MISSION, CHALLENGES, TOOLS,
+    tool: () => board && board.tool,
+    setTool,
     init(c) { ctx = c; },
     attach(scene) { board = scene.parts[0]; },
     wantsTerm, tapPost, select, after, paint, checkChallenges, renderPanel,

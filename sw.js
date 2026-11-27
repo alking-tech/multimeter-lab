@@ -1,9 +1,9 @@
 /* sw.js — يجعل التطبيق يعمل بدون إنترنت بعد أول فتح */
-const CACHE = 'multimeter-lab-v11';
+const CACHE = 'multimeter-lab-v18';
 const ASSETS = [
   './', './index.html', './css/style.css', './manifest.webmanifest',
   './js/engine.js', './js/meter.js', './js/parts.js', './js/missions.js',
-  './js/sound.js', './js/i18n.js', './js/ui.js', './js/progress.js', './js/builder.js', './js/laws.js', './js/meter-ui.js', './js/app.js',
+  './js/sound.js', './js/i18n.js', './js/ui.js', './js/progress.js', './js/components.js', './js/tour.js', './js/pages.js', './js/fx.js', './js/builder.js', './js/laws.js', './js/meter-ui.js', './js/app.js',
   './icons/icon.svg', './icons/icon-192.png', './icons/icon-512.png',
 ];
 self.addEventListener('install', e => {

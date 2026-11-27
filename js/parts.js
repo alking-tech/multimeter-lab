@@ -358,6 +358,119 @@
       },
       elems: (p, n) => [{ t: 'R', a: n('a'), b: n('b'), R: p.R, id: p.id }],
     },
+
+    // ── مكثف إلكتروليتي: يخزّن شحنة حقيقية (p.vc) تتغير مع الزمن ──
+    capacitor: {
+      terms: p => [{ name: '+', x: p.cx - 30, y: p.cy + 200 }, { name: '-', x: p.cx + 30, y: p.cy + 200 }],
+      draw: p => `
+        <g class="part">
+          <path d="M${p.cx - 14} ${p.cy + 120} V${p.cy + 150} L${p.cx - 30} ${p.cy + 172} V${p.cy + 200}" class="lead metal"/>
+          <path d="M${p.cx + 14} ${p.cy + 120} V${p.cy + 150} L${p.cx + 30} ${p.cy + 172} V${p.cy + 186}" class="lead metal"/>
+          <rect x="${p.cx - 40}" y="${p.cy}" width="80" height="122" rx="14" fill="url(#gCap)"/>
+          <ellipse cx="${p.cx}" cy="${p.cy + 6}" rx="38" ry="8" fill="#9aa3ad"/>
+          <path d="M${p.cx - 8} ${p.cy + 2} l16 8 M${p.cx + 8} ${p.cy + 2} l-16 8" stroke="#6b737c" stroke-width="2"/>
+          <rect x="${p.cx + 12}" y="${p.cy + 14}" width="22" height="104" rx="4" fill="#c9d6e3" opacity=".85"/>
+          ${[0, 1, 2, 3].map(k => `<text x="${p.cx + 23}" y="${p.cy + 40 + k * 22}" text-anchor="middle" class="cap-minus">−</text>`).join('')}
+          <text x="${p.cx - 12}" y="${p.cy + 56}" text-anchor="middle" class="cap-t">${p.uF}µF</text>
+          <text x="${p.cx - 12}" y="${p.cy + 76}" text-anchor="middle" class="cap-t sm">25V</text>
+          <text x="${p.cx - 30}" y="${p.cy + 222}" text-anchor="middle" class="plabel small">+</text>
+          <text x="${p.cx + 30}" y="${p.cy + 222}" text-anchor="middle" class="plabel small">−</text>
+          ${p.label ? label(p.cx, p.cy - 16, p.label) : ''}
+          <g class="tappable" data-act="discharge" data-part="${p.id}" role="button" tabindex="0" aria-label="${tr('فرّغ المكثف', 'Discharge the capacitor')}">
+            <rect x="${p.cx + 70}" y="${p.cy + 36}" width="150" height="50" rx="12" fill="${p.discharging ? '#2d9a63' : '#41474f'}" stroke="#5b626b"/>
+            <text x="${p.cx + 145}" y="${p.cy + 67}" text-anchor="middle" class="sup-b">${p.discharging ? tr('يتم التفريغ…', 'Discharging…') : tr('فرّغ المكثف', 'Discharge')}</text>
+          </g>
+        </g>`,
+      elems: (p, n) => [
+        { t: 'V', a: n('+'), b: n('-'), V: p.vc || 0, r: 2, id: p.id },
+        { t: 'R', a: n('+'), b: n('-'), R: 5e7 },
+      ],
+    },
+
+    // ── ترانزستور TO-92: وصلتان (قاعدة-باعث، قاعدة-مجمّع) والأرجل غير معلّمة ──
+    transistor: {
+      terms: p => [1, 2, 3].map((k, i) => ({ name: String(k), x: p.cx - 60 + i * 60, y: p.cy + 190 })),
+      draw: p => `
+        <g class="part">
+          ${[0, 1, 2].map(i => `<path d="M${p.cx - 16 + i * 16} ${p.cy + 66} V${p.cy + 110} L${p.cx - 60 + i * 60} ${p.cy + 150} V${p.cy + 190}" class="lead metal"/>`).join('')}
+          <path d="M${p.cx - 38} ${p.cy + 70} V${p.cy + 10} A38 38 0 0 1 ${p.cx + 38} ${p.cy + 10} V${p.cy + 70} Z" fill="#202225"/>
+          <rect x="${p.cx - 38}" y="${p.cy + 10}" width="76" height="60" fill="#2a2c30"/>
+          <text x="${p.cx}" y="${p.cy + 38}" text-anchor="middle" class="chip-t big">${p.code || 'BC547'}</text>
+          ${[1, 2, 3].map((k, i) => `<circle cx="${p.cx - 60 + i * 60}" cy="${p.cy + 130}" r="14" class="tag"/>${label(p.cx - 60 + i * 60, p.cy + 136, k, 'tag-t')}`).join('')}
+          ${p.label ? label(p.cx, p.cy - 40, p.label) : ''}
+        </g>`,
+      elems: (p, n) => {
+        const pin = role => n(String(p.pins.indexOf(role) + 1));
+        const B = pin('B'), C = pin('C'), E = pin('E');
+        const be = { Is: 1e-13, n: 1.05 }, bc = { Is: 4e-13, n: 1.05 };   // وصلة BE أعلى قليلاً من BC
+        return p.kind === 'NPN'
+          ? [{ t: 'D', a: B, b: E, ...be, id: p.id + '.be' }, { t: 'D', a: B, b: C, ...bc, id: p.id + '.bc' }]
+          : [{ t: 'D', a: E, b: B, ...be, id: p.id + '.be' }, { t: 'D', a: C, b: B, ...bc, id: p.id + '.bc' }];
+      },
+    },
+
+    // ── مقاومة متغيّرة 10k بمقبض ──
+    pot: {
+      terms: p => [1, 2, 3].map((k, i) => ({ name: String(k), x: p.cx - 60 + i * 60, y: p.cy + 150 })),
+      draw: p => {
+        const ang = -135 + 270 * p.pos;
+        return `
+        <g class="part">
+          ${[0, 1, 2].map(i => `<path d="M${p.cx - 60 + i * 60} ${p.cy + 60} V${p.cy + 150}" class="lead metal"/>`).join('')}
+          <rect x="${p.cx - 80}" y="${p.cy - 30}" width="160" height="96" rx="12" fill="#2f5aa8" stroke="#1d3e7a" stroke-width="2"/>
+          <circle cx="${p.cx}" cy="${p.cy + 18}" r="34" fill="#1c1f22" stroke="#4a5058" stroke-width="3"/>
+          <g transform="rotate(${ang.toFixed(1)} ${p.cx} ${p.cy + 18})"><rect x="${p.cx - 4}" y="${p.cy - 14}" width="8" height="26" rx="3" fill="#f3f4f1"/></g>
+          <text x="${p.cx - 62}" y="${p.cy + 58}" class="pot-t">10k</text>
+          ${[1, 2, 3].map((k, i) => `<text x="${p.cx - 60 + i * 60}" y="${p.cy + 174}" text-anchor="middle" class="plabel small">${k}</text>`).join('')}
+          <g class="tappable" data-act="potDown" data-part="${p.id}" role="button" tabindex="0" aria-label="${tr('لفّ المقبض يساراً', 'Turn knob left')}">
+            <rect x="${p.cx - 150}" y="${p.cy - 4}" width="56" height="44" rx="10" fill="#41474f"/><text x="${p.cx - 122}" y="${p.cy + 24}" text-anchor="middle" class="sup-b">↺</text></g>
+          <g class="tappable" data-act="potUp" data-part="${p.id}" role="button" tabindex="0" aria-label="${tr('لفّ المقبض يميناً', 'Turn knob right')}">
+            <rect x="${p.cx + 94}" y="${p.cy - 4}" width="56" height="44" rx="10" fill="#f5b41a"/><text x="${p.cx + 122}" y="${p.cy + 24}" text-anchor="middle" class="sup-b dark">↻</text></g>
+          ${p.label ? label(p.cx, p.cy - 44, p.label) : ''}
+        </g>`;
+      },
+      elems: (p, n) => [
+        { t: 'R', a: n('1'), b: n('2'), R: Math.max(20, p.R * p.pos), id: p.id + '.a' },
+        { t: 'R', a: n('2'), b: n('3'), R: Math.max(20, p.R * (1 - p.pos)), id: p.id + '.b' },
+      ],
+    },
+
+    // ── مقاومة ضوئية LDR مع مصباح مكتب ──
+    ldr: {
+      terms: p => [{ name: 'a', x: p.cx - 30, y: p.cy + 150 }, { name: 'b', x: p.cx + 30, y: p.cy + 150 }],
+      draw: p => `
+        <g class="part">
+          ${p.light ? `<circle cx="${p.cx}" cy="${p.cy}" r="90" fill="url(#gGlowWarm)" opacity=".55"/>` : ''}
+          <path d="M${p.cx - 14} ${p.cy + 30} V${p.cy + 100} L${p.cx - 30} ${p.cy + 120} V${p.cy + 150}" class="lead metal"/>
+          <path d="M${p.cx + 14} ${p.cy + 30} V${p.cy + 100} L${p.cx + 30} ${p.cy + 120} V${p.cy + 150}" class="lead metal"/>
+          <circle cx="${p.cx}" cy="${p.cy}" r="34" fill="#d9c08a" stroke="#a88d55" stroke-width="2"/>
+          <path d="M${p.cx - 22} ${p.cy - 14} h44 M${p.cx - 22} ${p.cy - 4} h44 M${p.cx - 22} ${p.cy + 6} h44 M${p.cx - 22} ${p.cy + 16} h44" stroke="#c0392b" stroke-width="3"/>
+          <path d="M${p.cx + 22} ${p.cy - 14} v10 M${p.cx - 22} ${p.cy - 4} v10 M${p.cx + 22} ${p.cy + 6} v10" stroke="#c0392b" stroke-width="3"/>
+          <g class="tappable" data-act="light" data-part="${p.id}" role="button" tabindex="0" aria-label="${tr('شغّل أو أطفئ الضوء', 'Toggle the light')}">
+            <rect x="${p.cx + 70}" y="${p.cy - 40}" width="150" height="56" rx="12" fill="${p.light ? '#f5b41a' : '#41474f'}"/>
+            <text x="${p.cx + 145}" y="${p.cy - 6}" text-anchor="middle" class="sup-b ${p.light ? 'dark' : ''}">${p.light ? tr('الضوء: مضاء', 'Light: ON') : tr('الضوء: مطفأ', 'Light: OFF')}</text>
+          </g>
+          ${p.label ? label(p.cx, p.cy - 50, p.label) : ''}
+        </g>`,
+      elems: (p, n) => [{ t: 'R', a: n('a'), b: n('b'), R: p.light ? 1200 : 180000, id: p.id }],
+    },
+
+    // ── فيوز زجاجي ──
+    fuse: {
+      terms: p => [{ name: 'a', x: p.x, y: p.y }, { name: 'b', x: p.x + 200, y: p.y }],
+      draw: p => `
+        <g class="part">
+          <path d="M${p.x} ${p.y} H${p.x + 40} M${p.x + 160} ${p.y} H${p.x + 200}" class="lead metal thick"/>
+          <rect x="${p.x + 40}" y="${p.y - 16}" width="22" height="32" rx="4" fill="url(#gMetal)"/>
+          <rect x="${p.x + 138}" y="${p.y - 16}" width="22" height="32" rx="4" fill="url(#gMetal)"/>
+          <rect x="${p.x + 62}" y="${p.y - 13}" width="76" height="26" rx="4" fill="rgba(220,235,245,.18)" stroke="rgba(220,235,245,.6)"/>
+          ${p.broken
+            ? `<path d="M${p.x + 62} ${p.y} q10 -3 22 -1 M${p.x + 138} ${p.y} q-12 3 -24 1" stroke="#c9ced4" stroke-width="2" fill="none"/><circle cx="${p.x + 100}" cy="${p.y}" r="5" fill="rgba(60,60,60,.5)"/>`
+            : `<path d="M${p.x + 62} ${p.y} H${p.x + 138}" stroke="#c9ced4" stroke-width="2"/>`}
+          ${p.label ? label(p.x + 100, p.y + 40, p.label) : ''}
+        </g>`,
+      elems: (p, n) => (p.broken ? [] : [{ t: 'R', a: n('a'), b: n('b'), R: 0.05, id: p.id }]),
+    },
   };
 
   function hex(cx, cy, r) {
@@ -372,6 +485,7 @@
       <linearGradient id="gBattery" x1="0" x2="1"><stop offset="0" stop-color="#e0771b"/><stop offset=".5" stop-color="#f59a2c"/><stop offset="1" stop-color="#c9620f"/></linearGradient>
       <linearGradient id="gAA" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3b3f45"/><stop offset=".45" stop-color="#b87333"/><stop offset=".55" stop-color="#b87333"/><stop offset="1" stop-color="#2a2d31"/></linearGradient>
       <linearGradient id="gRes" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f1dfb6"/><stop offset=".5" stop-color="#dcc28e"/><stop offset="1" stop-color="#bfa16a"/></linearGradient>
+      <linearGradient id="gCap" x1="0" x2="1"><stop offset="0" stop-color="#1f3f7a"/><stop offset=".5" stop-color="#3b6cc0"/><stop offset="1" stop-color="#1a3566"/></linearGradient>
       <linearGradient id="gMetal" x1="0" x2="1"><stop offset="0" stop-color="#8e949b"/><stop offset=".5" stop-color="#e3e6ea"/><stop offset="1" stop-color="#8e949b"/></linearGradient>
       <radialGradient id="gGlowRed"><stop offset="0" stop-color="#ff4d55" stop-opacity=".95"/><stop offset=".4" stop-color="#ff3540" stop-opacity=".35"/><stop offset="1" stop-color="#ff3540" stop-opacity="0"/></radialGradient>
       <radialGradient id="gGlowWarm"><stop offset="0" stop-color="#fff3b0" stop-opacity="1"/><stop offset=".35" stop-color="#ffd35a" stop-opacity=".45"/><stop offset="1" stop-color="#ffb020" stop-opacity="0"/></radialGradient>

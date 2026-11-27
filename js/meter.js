@@ -87,7 +87,7 @@
    * يعيد {value, ol, garbage, ac, events[], current(id)}
    */
   function measure(circuit, st) {
-    const res = { value: 0, ol: false, garbage: false, events: [], current: () => 0, meterCurrent: 0 };
+    const res = { value: 0, ol: false, garbage: false, events: [], current: () => 0, idc: () => 0, meterCurrent: 0 };
     const p = st.pos;
     const meterDC = meterElements(st, false);
     const meterAC = meterElements(st, true);
@@ -96,6 +96,7 @@
     const ac = Engine.solve(circuitFor(circuit, true).concat(meterAC));
     const dV = s => s.v(st.red) - s.v(st.black);
     res.current = id => Math.hypot(dc.i(id), ac.i(id));
+    res.idc = id => dc.i(id);
 
     // التيار المار في الجهاز (لفحص الفيوز وتحذير القِصَر)
     if (meterDC.length && meterDC[0].t === 'R') {
@@ -214,7 +215,7 @@
 
   function measureAnalog(circuit, st) {
     const p = st.pos;
-    const res = { value: 0, ol: false, garbage: false, events: [], current: () => 0, def: 0, analog: true };
+    const res = { value: 0, ol: false, garbage: false, events: [], current: () => 0, idc: () => 0, def: 0, analog: true };
     if (p.mode === 'OFF') return res;
     let meter = [];
     const R = st.red, B = st.black;
@@ -231,6 +232,7 @@
     const ac = Engine.solve(circuitFor(circuit, true).concat(acMeter));
     const dV = s => s.v(R) - s.v(B);
     res.current = id => Math.hypot(dc.i(id), ac.i(id));
+    res.idc = id => dc.i(id);
 
     if (p.mode === 'VDC') { res.def = dV(dc) / p.fs; res.value = dV(dc); }
     else if (p.mode === 'VAC') { res.def = Math.abs(dV(ac)) / p.fs; res.value = Math.abs(dV(ac)); }

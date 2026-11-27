@@ -46,7 +46,8 @@
   const LEVELS = [
     { n: 1, t: LV('أساسيات القياس', 'Measuring basics'), ids: ['battery', 'outlet', 'resistors', 'cables', 'led'] },
     { n: 2, t: LV('الدوائر والقوانين', 'Circuits & laws'), ids: ['current', 'series', 'divider', 'ohmlaw', 'kettle'] },
-    { n: 3, t: LV('تطبيقات وتشخيص', 'Real world & troubleshooting'), ids: ['car', 'analog', 'flashlight'] },
+    { n: 3, t: LV('القطع الإلكترونية', 'Electronic components'), ids: ['capacitor', 'transistor', 'sensors'] },
+    { n: 4, t: LV('تطبيقات وتشخيص', 'Real world & troubleshooting'), ids: ['car', 'analog', 'flashlight'] },
   ];
   const levelOf = id => (LEVELS.find(l => l.ids.includes(id)) || { n: 1 }).n;
 
@@ -60,30 +61,40 @@
         ${p && numbered ? `<span class="mc-done" title="${tr('مكتملة', 'Done')}">${icon('check')}</span>` : `<span class="mc-num">${numbered ? String(m.num).padStart(2, '0') : ''}</span>`}</div>
       <h3>${esc(T(m.title))}</h3><p>${esc(T(m.brief))}</p>
       ${extraChips ? `<div class="chips">${extraChips.map(c => `<span class="chip">${esc(c)}</span>`).join('')}</div>` : ''}
-      ${numbered ? `<div class="mc-foot"><span class="diff" data-d="${levelOf(m.id)}" title="${tr('الصعوبة', 'Difficulty')}"><i></i><i></i><i></i></span>
+      ${numbered ? `<div class="mc-foot"><span class="diff" data-d="${Math.min(3, levelOf(m.id))}" title="${tr('الصعوبة', 'Difficulty')}"><i></i><i></i><i></i></span>
         <span>${icon('clock')} ~${mins} ${tr('د', 'min')}</span>
         <span class="mstars">${o.status || stars(p?.stars || 0)}</span></div>` : ''}
     </${tag}>`;
   }
 
   const HERO = [
-    { m: 'DC', v: '9.41', u: 'V', c: LV('بطارية 9V', '9V battery'), r: '20V' },
-    { m: 'AC', v: '221', u: 'V', c: LV('مقبس المنزل', 'Wall socket'), r: '600V~' },
-    { m: 'Ω', v: '4.70', u: 'kΩ', c: LV('مقاومة 4.7k', '4.7k resistor'), r: '20kΩ' },
-    { m: 'DC', v: '57.6', u: 'mA', c: LV('تيار المصباح', 'Lamp current'), r: '200mA' },
-    { m: '▶|', v: '1.786', u: 'V', c: LV('LED أحمر', 'Red LED'), r: '▶|' },
-    { m: 'Ω', v: 'OL', u: '', c: LV('سلك مقطوع', 'Broken wire'), r: '•)))' },
+    { m: 'DC', v: '9.41', u: 'V', c: LV('بطارية 9V', '9V battery'), r: '20V', pos: 'v20' },
+    { m: 'AC', v: '221', u: 'V', c: LV('مقبس المنزل', 'Wall socket'), r: '600V~', pos: 'vac600' },
+    { m: '', v: '4.70', u: 'kΩ', c: LV('مقاومة 4.7k', '4.7k resistor'), r: '20kΩ', pos: 'r20k' },
+    { m: 'DC', v: '57.6', u: 'mA', c: LV('تيار المصباح', 'Lamp current'), r: '200mA', pos: 'a200m' },
+    { m: '', v: '1.786', u: 'V', c: LV('LED أحمر', 'Red LED'), r: '▶|', pos: 'diode' },
+    { m: '', v: 'OL', u: 'Ω', c: LV('سلك مقطوع', 'Broken wire'), r: '•)))', pos: 'cont' },
   ];
-  let heroI = 0, heroTimer = 0;
+  let heroI = 0, heroTimer = 0, HM = null;
   function heroTick() {
-    const h = HERO[heroI % HERO.length], lcd = $('#hvLcd');
-    if (!lcd) return;
-    $('#hvMode').textContent = h.m; $('#hvVal').textContent = h.v; $('#hvUnit').textContent = h.u;
+    const h = HERO[heroI % HERO.length];
+    if (!$('#heroMeter')) return;
+    if (!HM) {
+      HM = MeterUI.create('digital');
+      HM.mount($('#heroMeter'), { onPos() {}, onJack() {}, onButton() {} });
+      // معرّفات تدرّج فريدة حتى لا تتعارض مع جهاز المختبر
+      const hs = $('#heroMeter svg');
+      if (hs) hs.innerHTML = hs.innerHTML.replace(/(mHol|mKnob)-digital/g, '$1-hero');
+      $$('#heroMeter [tabindex]').forEach(e => e.removeAttribute('tabindex'));
+    }
+    const pi = Meter.POSITIONS.findIndex(p => p.id === h.pos);
+    HM.setPos(pi < 0 ? 0 : pi);
+    HM.setDisplay({ text: h.v, unit: h.u, modeTag: h.m, light: true });
     $('#hvCap').textContent = T(h.c); $('#hvRange').textContent = h.r;
-    lcd.classList.remove('tick'); void lcd.offsetWidth; lcd.classList.add('tick');
   }
   function startHero() {
     clearInterval(heroTimer); heroTick();
+    FX.hero($('.hero-vis'));
     if (!UI.reduce()) heroTimer = setInterval(() => { if (S.view === 'home') { heroI++; heroTick(); } }, 2600);
   }
 
@@ -92,58 +103,91 @@
     const doneCount = list.filter(m => S.progress[m.id]).length;
     const totalStars = list.reduce((a, m) => a + (S.progress[m.id]?.stars || 0), 0);
     const next = list.find(m => !S.progress[m.id]) || list[0];
-    $('#homeStats').innerHTML = `
+    const fresh = doneCount === 0;
+    $('#homeStats').innerHTML = fresh ? '' : `
       <div class="stat-ring">${UI.ring(doneCount / list.length, 76, tr('نسبة الإنجاز', 'Completion'))}
         <div class="stat"><b id="hsDone">0</b><span>${tr(`من ${list.length} مهمة`, `of ${list.length} missions`)}</span></div></div>
       <div class="stat"><b><span id="hsStars">0</span><small>/${list.length * 3}</small></b><span>${tr('نجوم', 'stars')}</span></div>
       <div class="stat"><b><span id="hsBuild">0</span><small>/${Builder.CHALLENGES.length}</small></b><span>${tr('تحديات الورشة', 'workshop challenges')}</span></div>`;
     UI.countUp($('#hsDone'), doneCount); UI.countUp($('#hsStars'), totalStars); UI.countUp($('#hsBuild'), Builder.doneCount());
-    $('#startBtn').innerHTML = `${icon('play')} ${doneCount ? tr(`تابع: ${esc(T(next.title))}`, `Continue: ${esc(T(next.title))}`) : tr('ابدأ المهمة الأولى', 'Start the first mission')}`;
-    $('#startBtn').onclick = () => go('lab-' + next.id);
-    $('#lawsBtn').innerHTML = `${icon('sigma')} ${tr('ابدأ بالقوانين', 'Start with the laws')}`;
-    $('#homeGuide').innerHTML = `${icon('book')} ${tr('الدليل', 'Guide')}`;
+    $('#startBtn').innerHTML = `${icon('play')} ${doneCount ? tr(`تابع: ${esc(T(next.title))}`, `Continue: ${esc(T(next.title))}`) : tr('دخول المختبر', 'Enter the lab')}`;
+    $('#startBtn').onclick = () => go(doneCount ? 'lab-' + next.id : 'lab-free');
+    $('#pathsBtn').innerHTML = `${icon('book')} ${tr('استكشف الدروس', 'Explore the lessons')}`;
     $('#certBtn').innerHTML = `${icon('cap')} ${tr('شهادتك', 'Your certificate')}`;
     $('#certBtn').hidden = doneCount < list.length;
+    $('#startPath').hidden = true;
 
     const exam = inExam();
     $('#examHome').hidden = !exam;
-    $('.hero').hidden = exam;
-    $('#extras').hidden = exam;
+    ['.hero', '.features', '#homePaths', '#homeNext'].forEach(q => { $(q).hidden = exam; });
     if (exam) {
+      $('#startPath').hidden = true;
       const done = examDone(), over = !examActive();
       $('#examHome').innerHTML = `<h2>${icon('clock')} ${esc(S.exam.title)}</h2>
         <p>${over ? tr('انتهى وقت الاختبار. نتائجك وصلت للمعلم.', 'Time is up. Your results reached the teacher.')
-          : tr(`أنجز المهام التالية قبل انتهاء الوقت. لكل مهمة محاولة واحدة${S.exam.hints ? '' : '، والتلميحات مغلقة'}.`, `Finish these missions before time runs out. One attempt each${S.exam.hints ? '' : ', hints are off'}.`)}</p>`;
-      $('#missionGrid').innerHTML = `<div class="grid">${S.exam.missions.map(id => Missions.byId(id)).filter(Boolean).map(m => {
-        const d = done.has(m.id);
-        const status = d ? tr('✓ تم التسليم', '✓ Submitted') : over ? tr('انتهى الوقت', 'Time up') : tr('محاولة واحدة', 'One attempt');
-        return card(m, null, { locked: d || over, status: `<span class="chip">${status}</span>` });
-      }).join('')}</div>`;
-      $('#missionsTitle').textContent = tr('مهام الاختبار', 'Exam missions');
-      $('#missionsSub').textContent = '';
+          : tr(`أنجز المهام التالية قبل انتهاء الوقت. لكل مهمة محاولة واحدة${S.exam.hints ? '' : '، والتلميحات مغلقة'}.`, `Finish these missions before time runs out. One attempt each${S.exam.hints ? '' : ', hints are off'}.`)}</p>
+        <div class="grid">${S.exam.missions.map(id => Missions.byId(id)).filter(Boolean).map(m => {
+          const d = done.has(m.id);
+          const status = d ? tr('✓ تم التسليم', '✓ Submitted') : over ? tr('انتهى الوقت', 'Time up') : tr('محاولة واحدة', 'One attempt');
+          return card(m, null, { locked: d || over, status: `<span class="chip">${status}</span>` });
+        }).join('')}</div>`;
     } else {
-      $('#missionsTitle').textContent = tr('المهام', 'Missions');
-      $('#missionsSub').textContent = tr('ثلاثة مستويات، من أول قياس حتى تشخيص الأعطال. ابدأ من أي مهمة.', 'Three levels, from your first reading to fault-finding. Start anywhere.');
-      $('#missionGrid').innerHTML = LEVELS.map(lv => {
-        const ms = lv.ids.map(id => Missions.byId(id)), d = ms.filter(m => S.progress[m.id]).length;
-        return `<section class="level"><header class="level-head"><span class="level-badge">${tr('المستوى', 'LEVEL')} ${lv.n}</span><h3>${esc(T(lv.t))}</h3>
-          <div class="level-prog"><div class="bar"><span style="--w:${Math.round(d / ms.length * 100)}%"></span></div><small>${d}/${ms.length}</small></div></header>
-          <div class="grid">${ms.map(m => card(m)).join('')}</div></section>`;
-      }).join('');
+      $('#homePaths').innerHTML = `<div class="sec-head"><div><p class="eyebrow">${fresh ? tr('ابدأ من هنا', 'Start here') : tr('تابع رحلتك', 'Continue your journey')}</p><h2>${tr('مسارات التعلم', 'Learning paths')}</h2><p>${tr('اختر المسار المناسب لمستواك وابدأ التعلّم خطوة بخطوة.', 'Pick the path that fits your level and learn step by step.')}</p></div>
+        <a class="btn ghost small" href="#paths">${tr('كل المسارات', 'All paths')} ${icon('arrow', 'flip-rtl')}</a></div>
+        <div class="path-grid compact">${Pages.PATHS.map((P, k) => Pages.pathCard(P, true, fresh && k === 0)).join('')}</div>`;
+      const todo = list.filter(m => !S.progress[m.id]);
+      const pick = (todo.length ? todo : list).slice(0, 3);
+      $('#homeNext').innerHTML = `<div class="sec-head"><div><p class="eyebrow">${tr('جاهزة لك', 'Ready for you')}</p><h2>${doneCount ? tr('تجاربك التالية', 'Your next experiments') : tr('أول التجارب', 'First experiments')}</h2><p>${tr(`${list.length} تجربة في أربعة مستويات، كل تجربة تتحقق من قراءتك الحية.`, `${list.length} experiments in four levels; each checks your live reading.`)}</p></div>
+        <a class="btn ghost small" href="#experiments">${tr('كل التجارب', 'All experiments')} ${icon('arrow', 'flip-rtl')}</a></div>
+        <div class="grid">${pick.map(m => card(m)).join('')}</div>`;
     }
-    $('#extraGrid').innerHTML =
-      card(Builder.MISSION, [tr('ابنِ بنفسك', 'Build it yourself'), tr('5 تحديات', '5 challenges')]) +
-      `<a class="mcard free" href="#laws"><div class="mc-head"><span class="mc-lcd">V=IR</span><span class="mc-num"></span></div>
-        <h3>${tr('القوانين', 'The Laws')}</h3><p>${tr('من أين أبدأ؟ الفرق بين الجهد والتيار والمقاومة، وكل قانون مع مثال وحاسبة.', 'Where to start? Voltage vs current vs resistance, and every law with an example and a calculator.')}</p>
-        <div class="chips"><span class="chip">${tr('مرجع', 'Reference')}</span><span class="chip">${tr('حاسبات', 'Calculators')}</span></div></a>` +
-      card(Missions.free, [tr('جهاز رقمي أو تناظري', 'Digital or analog'), tr('بدون نجوم', 'No stars')]);
     renderStudentChip();
     startHero();
   }
 
+  // ── صفحة التجارب العملية ──
+  function renderExperiments() {
+    const list = Missions.list, f = S.expFilter || 0;
+    $('#missionsTitle').textContent = tr(`${list.length} تجربة من أول قياس حتى تشخيص الأعطال`, `${list.length} experiments, from your first reading to fault-finding`);
+    $('#missionsSub').textContent = tr('أربعة مستويات. ابدأ من أي تجربة، وكل تجربة تتحقق من قراءتك الحية وتمنحك نجوماً حسب دقتك.', 'Four levels. Start anywhere: every experiment checks your live reading and gives stars for accuracy.');
+    $('#expFilters').innerHTML = [{ n: 0, t: LV('الكل', 'All') }, ...LEVELS].map(lv => `<button class="fchip" data-f="${lv.n}" aria-pressed="${lv.n === f}">${lv.n ? `<b>${lv.n}</b> ` : ''}${esc(T(lv.t))}</button>`).join('');
+    $$('#expFilters [data-f]').forEach(b => b.onclick = () => { S.expFilter = +b.dataset.f; renderExperiments(); });
+    $('#missionGrid').innerHTML = LEVELS.filter(lv => !f || lv.n === f).map(lv => {
+      const ms = lv.ids.map(id => Missions.byId(id)), d = ms.filter(m => S.progress[m.id]).length;
+      return `<section class="level"><header class="level-head"><span class="level-badge">${tr('المستوى', 'LEVEL')} ${lv.n}</span><h3>${esc(T(lv.t))}</h3>
+        <div class="level-prog"><div class="bar"><span style="--w:${Math.round(d / ms.length * 100)}%"></span></div><small>${d}/${ms.length}</small></div>
+        <span class="swipe-hint">${tr('اسحب للمزيد', 'Swipe for more')} ${icon('arrow', 'swipe-ic')}</span></header>
+        <div class="grid">${ms.map(m => card(m)).join('')}</div></section>`;
+    }).join('');
+    $('#extras').hidden = !!f;
+    $('#extraGrid').innerHTML =
+      card(Builder.MISSION, [tr('ابنِ بنفسك', 'Build it yourself'), tr('5 تحديات', '5 challenges')]) +
+      card(Missions.free, [tr('جهاز رقمي أو تناظري', 'Digital or analog'), tr('بدون نجوم', 'No stars')]);
+  }
+
+  // «ابدأ من هنا»: ثلاث خطوات للمبتدئ، تختفي بعد إكمالها
+  function renderStartPath() {
+    const st = Progress.Stats.get();
+    const steps = [
+      { href: '#tour', ic: 'eye', t: tr('تعرّف على الجهاز', 'Meet the meter'), d: tr('جولة قصيرة على كل جزء وماذا يفعل', 'A short tour of every part and what it does'), done: Tour.seen() },
+      { href: '#laws', ic: 'sigma', t: tr('افهم الأساسيات', 'Learn the basics'), d: tr('الفرق بين الجهد والتيار والمقاومة', 'Voltage vs current vs resistance'), done: (st.laws || 0) > 0 },
+      { href: '#lab-battery', ic: 'play', t: tr('أول قياس لك', 'Your first reading'), d: tr('مهمة «البطارية الضعيفة»', 'The "Weak Battery" mission'), done: !!S.progress.battery },
+    ];
+    const box = $('#startPath');
+    const allDone = steps.every(x => x.done);
+    box.hidden = allDone || inExam();
+    if (box.hidden) return;
+    const nextI = steps.findIndex(x => !x.done);
+    box.innerHTML = `<div class="sec-head"><div><h2>${tr('ابدأ من هنا', 'Start here')}</h2><p>${tr('ثلاث خطوات قصيرة قبل المهام، بالترتيب.', 'Three short steps before the missions, in order.')}</p></div></div>
+      <ol class="sp-steps">${steps.map((x, i) => `<li><a class="sp-step ${x.done ? 'done' : ''} ${i === nextI ? 'next' : ''}" href="${x.href}">
+        <span class="sp-n">${x.done ? icon('check') : i + 1}</span>
+        <span class="sp-body"><b>${x.t}</b><small>${x.d}</small></span>${icon(x.ic, 'sp-ic')}</a></li>`).join('')}</ol>`;
+  }
+
   function renderStudentChip() {
     const el = $('#studentChip');
-    if (!S.server) { el.hidden = true; return; }
+    // الاسم يُطلب فقط أثناء اختبار يديره المعلم؛ غير ذلك المنصة مفتوحة بدون تسجيل
+    if (!S.server || !S.exam) { el.hidden = true; return; }
     el.hidden = false;
     el.innerHTML = `${icon('user')} ${S.student ? esc(S.student.name) : tr('سجّل اسمك', 'Sign in')}`;
   }
@@ -177,8 +221,50 @@
     const free = m.id === 'free' || m.builder;
     setMeterKind(m.meter === 'analog' ? true : free ? S.analogPref : false);
     $('#meterSwitch').hidden = !free;
-    renderBench(); renderPanel(); renderFuses();
+    renderBench(); renderPanel(); renderFuses(); renderLibrary(); paintLabHead();
     requestAnimationFrame(() => { layout(); update(); });
+    const wantTour = S.pendingTour || (!Tour.seen() && !inExam() && !m.builder);
+    S.pendingTour = false;
+    if (wantTour) setTimeout(() => { if (S.view === 'lab') Tour.start(S.analog ? 'analog' : 'digital'); }, 700);
+  }
+
+  // ── مكتبة المكونات (عمود المختبر) ──
+  const LIB_COMP = { battery9: 'battery', batteryBox: 'battery', aaPack: 'battery', carBattery: 'battery', resistor: 'resistor', diode: 'diode', led: 'led', lamp: 'lamp', switch: 'switch', capacitor: 'capacitor', transistor: 'transistor', pot: 'pot', ldr: 'ldr', fuse: 'fuse' };
+  const LIB_OTHER = { outlet: [LV('مقبس كهرباء', 'Wall socket'), 'bolt'], cable: [LV('سلك', 'Cable'), 'wire'], supply: [LV('مصدر متغير', 'Power supply'), 'battery'], dutBoard: [LV('لوحة دائرة', 'Circuit board'), 'wrench'], heater: [LV('سخان', 'Heater'), 'flame'], jumper: [LV('وصلة', 'Jumper'), 'wire'] };
+  function renderLibrary() {
+    const box = $('#libList');
+    if (!S.scene) { box.innerHTML = ''; return; }
+    if (isBuilder()) {
+      $('#libTitle').textContent = tr('أدوات البناء', 'Build tools');
+      const cur = Builder.tool();
+      box.innerHTML = Builder.TOOLS.map(t => `<button class="lib-item ${cur === t.id ? 'on' : ''}" data-tool="${t.id}" aria-pressed="${cur === t.id}">
+        <span class="lib-vis">${icon(t.icon)}</span><span class="lib-n">${esc(T(t))}</span></button>`).join('');
+      $$('[data-tool]', box).forEach(b => b.onclick = () => Builder.setTool(b.dataset.tool));
+      return;
+    }
+    $('#libTitle').textContent = tr('المكونات', 'Components');
+    const seen = new Map();
+    for (const p of S.scene.parts) {
+      const key = LIB_COMP[p.type] || p.type;
+      if (!LIB_COMP[p.type] && !LIB_OTHER[p.type]) continue;
+      seen.set(key, (seen.get(key) || 0) + 1);
+    }
+    box.innerHTML = [...seen].map(([k, n]) => {
+      const comp = Components.PARTS.find(c => c.id === k);
+      const name = comp ? T(comp.name) : T(LIB_OTHER[k][0]);
+      const vis = comp ? `<svg viewBox="0 0 120 80" aria-hidden="true">${Components.LOOK[k]}</svg>` : icon(LIB_OTHER[k][1]);
+      return `<button class="lib-item" ${comp ? `data-comp="${k}"` : 'disabled'} title="${esc(name)}">
+        <span class="lib-vis">${vis}</span><span class="lib-n">${esc(name)}</span>${n > 1 ? `<i class="lib-x">×${n}</i>` : ''}${comp ? icon('info', 'lib-i') : ''}</button>`;
+    }).join('') || `<p class="lib-empty">${tr('لا قطع في هذا المشهد', 'No parts here')}</p>`;
+    $$('[data-comp]', box).forEach(b => b.onclick = () => modal(`${Components.info(b.dataset.comp)}
+      <div class="modal-actions"><a class="btn small" href="#components">${icon('book')} ${tr('مكتبة القطع كاملة', 'Full parts library')}</a><button class="btn primary small" data-close>${tr('رجوع للتجربة', 'Back to the experiment')}</button></div>`));
+  }
+
+  function paintLabHead() {
+    const m = S.mission; if (!m) return;
+    const P = Pages.pathOf(m.id);
+    $('#labCrumb').textContent = m.num > 0 ? `${tr('التجربة', 'Experiment')} ${String(m.num).padStart(2, '0')} · ${T(m.title)}` : T(m.title);
+    $('#labBack').setAttribute('href', P && P.id !== 'free' ? `#path-${P.id}:${m.id}` : '#experiments');
   }
 
   function renderBench() {
@@ -614,7 +700,9 @@
     }
     return best;
   }
-  function attach(k, termId) { S.probes[k].term = termId; S.probes[k].drag = null; markAttached(); layout(); update(); }
+  function attach(k, termId) {
+    if (termId && S.probes[k].term !== termId) { const c = termCenter(termId); if (c) FX.burst($('#labArea'), c.x, c.y, 9); }
+    S.probes[k].term = termId; S.probes[k].drag = null; markAttached(); layout(); update(); }
 
   function setupProbe(k) {
     const el = $(k === 'red' ? '#probeRed' : '#probeBlack');
@@ -655,7 +743,29 @@
     el.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); S.sel = S.sel === k ? null : k; layout(); update(); } });
   }
 
-  function refreshLab() { renderBench(); if (isBuilder()) Builder.renderPanel($('#pBuild')); layout(); update(); }
+  // ── المكثف: الشحنة تتغير مع الزمن حسب التيار المار فيه (dV = I·dt / C) ──
+  function capTick() {
+    if (!S.scene || !S.last) return;
+    const caps = S.scene.parts.filter(p => p.type === 'capacitor');
+    if (!caps.length) return;
+    const dt = 0.1, mode = curPos().mode;
+    const ohmLike = !S.analog && ['OHM', 'CONT', 'DIODE'].includes(mode);
+    let changed = false, rerender = false;
+    for (const p of caps) {
+      const old = p.vc || 0;
+      let vc = old - S.last.idc(p.id) * dt / (p.uF * 1e-6);
+      if (p.discharging) {
+        vc *= Math.exp(-dt / 0.35);
+        if (Math.abs(vc) < 0.01) { vc = 0; p.discharging = false; rerender = true; }
+      }
+      if (ohmLike && Math.abs(vc) > 2.8 && Math.abs(vc) > Math.abs(old)) vc = old;   // جهد اختبار الجهاز محدود
+      if (Math.abs(vc - old) > 1e-6) { p.vc = vc; changed = true; }
+    }
+    if (rerender) { renderBench(); layout(); }
+    if (changed || rerender) update();
+  }
+
+  function refreshLab() { renderBench(); if (isBuilder()) Builder.renderPanel($('#pBuild')); renderLibrary(); layout(); update(); }
 
   function onBenchClick(e) {
     const term = e.target.closest('.term');
@@ -680,6 +790,10 @@
       case 'supDown': p.V = Math.max(0, p.V - 1); break;
       case 'dut': p.dut = p.dut === 'LED' ? 'R' : 'LED'; break;
       case 'engine': p.engine = !p.engine; break;
+      case 'discharge': p.discharging = true; break;
+      case 'potUp': p.pos = Math.min(1, Math.round((p.pos + 0.1) * 10) / 10); break;
+      case 'potDown': p.pos = Math.max(0, Math.round((p.pos - 0.1) * 10) / 10); break;
+      case 'light': p.light = !p.light; break;
     }
     Sound.click();
     const focusAct = act.dataset.act, focusPart = act.dataset.part;
@@ -736,6 +850,8 @@
     $$('[data-go]', m).forEach(b => b.onclick = () => { closeModal(); go(b.dataset.go); });
     $$('[data-again]', m).forEach(b => b.onclick = () => { closeModal(); Progress.Stats.bump('retry'); openMission(S.mission.id); });
     $$('[data-cert]', m).forEach(b => b.onclick = () => showCertificate());
+    $$('[data-close]', m).forEach(b => b.onclick = closeModal);
+    $$('a[href^="#"]', m).forEach(a => a.addEventListener('click', closeModal));
     const f = m.querySelector('button, input'); if (f) f.focus();
   }
   function closeModal() { $('#modal').hidden = true; document.body.classList.remove('printing-cert'); }
@@ -792,7 +908,6 @@
     } catch (e) { S.server = false; }
     renderStudentChip();
     if (!S.server) return;
-    if (!S.student) askName();
     await pollConfig();
     setInterval(pollConfig, 8000);
   }
@@ -805,13 +920,14 @@
       if (S.exam) S.examClockSkew = j.now - Date.now() / 1000;
       const nowId = S.exam ? S.exam.id : null;
       if (prevId !== nowId) {
+        if (S.exam && !S.student) askName();
         if (S.exam) toast(tr(`بدأ الاختبار: ${S.exam.title}. لديك ${Math.round(examLeft() / 60)} دقيقة.`, `Exam started: ${S.exam.title}. You have ${Math.round(examLeft() / 60)} minutes.`), 'warn');
         else if (prevId) toast(tr('أنهى المعلم الاختبار.', 'The teacher ended the exam.'), 'info');
         if (S.view === 'home') renderHome();
-        else if (S.exam && (S.view === 'laws' || S.view === 'progress' || (S.mission && !S.exam.missions.includes(S.mission.id)))) go('home');
+        else if (S.exam && (['laws', 'progress', 'components', 'experiments', 'paths', 'path', 'resources', 'about'].includes(S.view) || (S.mission && !S.exam.missions.includes(S.mission.id)))) go('home');
       }
     } catch (e) { /* offline */ }
-    tickExam();
+    renderStudentChip(); tickExam();
   }
 
   function tickExam() {
@@ -864,16 +980,26 @@
   }
 
   // ════════════════════════════════ التوجيه واللغة
+  const VIEWS = ['home', 'lab', 'laws', 'progress', 'components', 'experiments', 'paths', 'path', 'resources', 'about'];
   function go(hash) { if (location.hash !== '#' + hash) location.hash = hash; else route(); }
   function showView(v) {
     S.view = v;
-    ['home', 'lab', 'laws', 'progress'].forEach(id => { $('#' + id).hidden = id !== v; });
+    VIEWS.forEach(id => { $('#' + id).hidden = id !== v; });
+    if (v !== 'lab' && document.fullscreenElement) document.exitFullscreen().catch(() => {});
+    if (v !== 'lab') { Tour.hide(); if (Tour.explaining) { Tour.explain(false); paintTools(); } }
     const cur = $('#' + v);
     cur.classList.remove('view-in'); void cur.offsetWidth; cur.classList.add('view-in');
     document.body.dataset.view = v;
-    $$('.nav [data-nav]').forEach(a => { if (a.dataset.nav === v || (v === 'lab' && a.dataset.nav === 'home')) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current'); });
+    const navOf = { path: 'paths', laws: 'resources', components: 'resources', progress: 'resources' }[v] || v;
+    $$('.nav [data-nav]').forEach(a => { if (a.dataset.nav === navOf) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current'); });
+    $('#progBtn').classList.toggle('on', v === 'progress');
   }
-  function route() { routeNow(); }
+  function route() {
+    routeNow();
+    // كل صفحة داخلية تُحسب كزيارة لصفحة باسمها في عدّاد الزوار
+    const h = location.hash.slice(1);
+    if (h && window.goatcounter && window.goatcounter.count) window.goatcounter.count({ path: '/' + h.split(':')[0], title: document.title });
+  }
   function routeNow() {
     const h = location.hash.slice(1);
     Sound.beep(false);
@@ -887,13 +1013,52 @@
       Laws.render($('#laws'));
       Progress.Stats.bump('laws');
       window.scrollTo(0, 0);
+    } else if (h === 'components' && !inExam()) {
+      showView('components'); S.scene = null; S.mission = null;
+      Components.render($('#components'));
+      Progress.Stats.bump('comps');
+      window.scrollTo(0, 0);
+    } else if (h === 'guide') {
+      history.replaceState(null, '', '#resources');
+      routeNow();
+      openGuide();
+      return;
+    } else if (h === 'experiments' && !inExam()) {
+      showView('experiments'); S.scene = null; S.mission = null;
+      renderExperiments();
+      window.scrollTo(0, 0);
+    } else if (h === 'paths' && !inExam()) {
+      showView('paths'); S.scene = null; S.mission = null;
+      Pages.renderPaths($('#paths'));
+      window.scrollTo(0, 0);
+    } else if (h.startsWith('path-') && !inExam()) {
+      const [pid, les] = h.slice(5).split(':');
+      const same = S.view === 'path';
+      showView('path'); S.scene = null; S.mission = null;
+      Pages.renderPath($('#path'), pid, les ? (les in { tour: 1, laws: 1, components: 1 } ? '@' + les : les) : null);
+      if (!same || matchMedia('(max-width: 720px)').matches) window.scrollTo(0, 0);
+    } else if (h === 'resources' && !inExam()) {
+      showView('resources'); S.scene = null; S.mission = null;
+      Pages.renderResources($('#resources'), { teacher: S.server });
+      $$('#resources [data-open-guide]').forEach(a => a.onclick = e => { e.preventDefault(); openGuide(); });
+      window.scrollTo(0, 0);
+    } else if (h === 'about' && !inExam()) {
+      showView('about'); S.scene = null; S.mission = null;
+      Pages.renderAbout($('#about'), { counts: { missions: Missions.list.length, parts: Components.PARTS.length, challenges: Builder.CHALLENGES.length } });
+      window.scrollTo(0, 0);
+    } else if (h === 'tour' && !inExam()) {
+      S.pendingTour = true;
+      location.replace('#lab-free');
+      return;
     } else if (h === 'progress' && !inExam()) {
       showView('progress'); S.scene = null; S.mission = null;
       Progress.render($('#progress'));
       window.scrollTo(0, 0);
     } else {
+      const wasHome = S.view === 'home';
       showView('home'); S.scene = null; S.mission = null;
       renderHome();
+      if (!wasHome) window.scrollTo(0, 0);
     }
   }
 
@@ -902,13 +1067,29 @@
     if (S.view === 'home') renderHome();
     else if (S.view === 'laws') Laws.render($('#laws'));
     else if (S.view === 'progress') Progress.render($('#progress'));
+    else if (S.view === 'components') Components.render($('#components'));
+    else if (['experiments', 'paths', 'path', 'resources', 'about'].includes(S.view)) routeNow();
     else if (S.view === 'lab' && S.scene) {
       if (S.question) S.question = S.mission.question(S.scene);
-      renderBench(); renderPanel(); renderFuses();
+      renderBench(); renderPanel(); renderFuses(); renderLibrary(); paintLabHead();
       requestAnimationFrame(() => { layout(); update(); });
     }
     if (!$('#guide').hidden) $('#guideColors').innerHTML = colorTable(false);
-    renderStudentChip(); tickExam();
+    renderStudentChip(); tickExam(); paintTools();
+  }
+
+  function paintTools() {
+    const tb = (ic, t) => `${icon(ic)}<span>${t}</span>`;
+    $('#tourBtn').innerHTML = tb('play', tr('جولة الجهاز', 'Meter tour'));
+    const on = Tour.explaining;
+    $('#explainBtn').setAttribute('aria-pressed', String(on));
+    $('#explainBtn').innerHTML = tb('info', on ? tr('إيقاف الشرح', 'Stop explaining') : tr('اشرح لي', 'Explain'));
+    $('#probesBtn').innerHTML = tb('target', tr('أعد المجسات', 'Reset probes'));
+    $('#pRestart').innerHTML = tb('refresh', tr('إعادة', 'Restart'));
+    $('#guideBtn').innerHTML = tb('book', tr('الدليل', 'Guide'));
+    const fs = !!document.fullscreenElement;
+    $('#fullBtn').innerHTML = tb(fs ? 'x' : 'eye', fs ? tr('خروج', 'Exit') : tr('ملء الشاشة', 'Fullscreen'));
+    $('#fullBtn').hidden = !document.fullscreenEnabled;
   }
 
   function paintLang() {
@@ -959,8 +1140,17 @@
     $('#pRecord').onclick = recordPoint;
     $('#pToggle').onclick = () => $('#panel').classList.toggle('open');
     $('#pRestart').onclick = () => openMission(S.mission.id);
-    $('#guideBtn').onclick = e => { e.preventDefault(); openGuide(); };
-    $('#homeGuide').onclick = openGuide;
+    $('#guideBtn').onclick = openGuide;
+    $('#probesBtn').onclick = () => {
+      S.probes.red = { term: null }; S.probes.black = { term: null }; S.sel = null;
+      markAttached(); layout(); update();
+    };
+    $('#fullBtn').onclick = () => {
+      if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
+      else $('#lab').requestFullscreen().catch(() => {});
+    };
+    document.addEventListener('fullscreenchange', () => { paintTools(); requestAnimationFrame(layout); });
+    Pages.setContext({ progress: () => S.progress, stats: () => Progress.Stats.get(), tourSeen: () => Tour.seen(), stars });
     $('#certBtn').onclick = showCertificate;
     $('#langBtn').onclick = () => { if (I18N.lang === 'ar') Progress.Stats.bump('lang'); I18N.set(I18N.lang === 'en' ? 'ar' : 'en'); };
     I18N.onChange(applyLang);
@@ -975,11 +1165,19 @@
     mute.onclick = () => { Sound.toggleMute(); paintMute(); };
     paintLang();
     setupCardFx();
+    paintTools();
+    $('#tourBtn').onclick = () => Tour.start(S.analog ? 'analog' : 'digital', paintTools);
+    $('#explainBtn').onclick = () => {
+      const on = Tour.explain(!Tour.explaining);
+      paintTools();
+      if (on) toast(tr('وضع الشرح: المس أي جزء من الجهاز أو المجسات لترى شرحه.', 'Explain mode: tap any part of the meter or probes to see what it does.'), 'info');
+    };
 
     new ResizeObserver(() => layout()).observe($('#labArea'));
     window.addEventListener('resize', layout);
     setInterval(() => { if (S.scene && S.last) renderDisplay(); }, 420);
     setInterval(tickExam, 1000);
+    setInterval(capTick, 100);
     window.addEventListener('hashchange', route);
     route();
     detectServer();

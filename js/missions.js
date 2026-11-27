@@ -358,6 +358,119 @@
       ],
     },
 
+    // ───────────────────────────── المكثف
+    {
+      id: 'capacitor', icon: '‖',
+      title: L('المكثف المشحون', 'The Charged Capacitor'),
+      brief: L('مكثف إلكتروليتي أُخرج من جهاز قديم. قد يكون ما زال مشحوناً! افحصه بأمان، ثم شاهد كيف يشحنه الجهاز وهو يقيس.', 'An electrolytic capacitor pulled from an old device. It may still be charged! Check it safely, then watch the meter charge it as it measures.'),
+      skills: [L('المكثف', 'Capacitors'), L('الشحن والتفريغ', 'Charge & discharge'), L('السلامة', 'Safety')],
+      warn: L('المكثفات الكبيرة قد تحتفظ بشحنة خطيرة حتى بعد فصل الجهاز. افحص الجهد وفرّغ المكثف قبل لمس أطرافه.', 'Large capacitors can hold a dangerous charge long after unplugging. Check the voltage and discharge before touching the leads.'),
+      setup() {
+        return { parts: [{ type: 'capacitor', id: 'C1', cx: 240, cy: 90, uF: 100, vc: rnd(5.5, 8.5), label: tr('مكثف إلكتروليتي', 'Electrolytic capacitor') }], data: {} };
+      },
+      tasks: [
+        { text: L('قبل أي شيء: قِس جهد المكثف على V⎓ (الأحمر على +)', 'First: measure its voltage on V⎓ (red on +)'), hint: L('الطرف تحت الشريط الفاتح المرسوم عليه (−) هو السالب.', 'The leg under the light stripe marked (−) is negative.'), check: (s, sc) => { const ok = s.mode === 'VDC' && on(s, 'C1') && valid(s) && Math.abs(s.value) > 1; if (ok) sc.data.v0 = Math.abs(s.value); return ok; } },
+        { text: L('المكثف مشحون! اضغط «فرّغ المكثف» حتى يصبح جهده قريباً من الصفر', 'It is charged! Press "Discharge" until its voltage is near zero'), hint: L('في الواقع نفرّغه بمقاومة (مثل 1kΩ) بين طرفيه لبضع ثوانٍ، ولا نقصّر طرفيه بمفك.', 'In real life you discharge it through a resistor (e.g. 1kΩ) for a few seconds, never by shorting it with a screwdriver.'), check: (s, sc) => sc.data.v0 && Math.abs(sc.parts[0].vc) < 0.05 },
+        { text: L('لفّ إلى Ω على النطاق 200k، وضع الأحمر على (+): راقب القراءة', 'Set Ω on the 200k range, red on (+): watch the reading'), hint: L('القراءة لن تثبت! انتظر عدة ثوانٍ ولاحظ كيف تصعد حتى تظهر OL.', 'The reading will not settle! Wait a few seconds and watch it climb until OL.'), check: (s, sc) => {
+          if (!(s.mode === 'OHM' && on(s, 'C1'))) return false;
+          if (!s.ol && !s.garbage) { sc.data.rMin = Math.min(sc.data.rMin ?? Infinity, s.value); sc.data.rMax = Math.max(sc.data.rMax ?? 0, s.value); }
+          if (s.ol && sc.data.rMin != null) sc.data.rMax = Infinity;
+          return sc.data.rMin != null && sc.data.rMax - sc.data.rMin > 40000;
+        } },
+      ],
+      question: () => ({
+        text: tr('لماذا ترتفع قراءة المقاومة تدريجياً حتى تصل إلى OL؟', 'Why does the resistance reading climb steadily until OL?'),
+        choices: ch([[tr('لأن الجهاز يشحن المكثف، فيرتفع جهده ويقل التيار المار فيه', 'The meter is charging the capacitor, so its voltage rises and the current falls'), true], [tr('لأن المكثف تالف', 'The capacitor is faulty'), false], [tr('لأن بطارية الجهاز تنفد', "The meter's battery is running out"), false], [tr('لأن المكثف مقاومة متغيّرة', 'A capacitor is a variable resistor'), false]]),
+        why: tr('المكثف يخزّن الشحنة. الجهاز يدفع تياراً صغيراً فيشحنه، وكلما امتلأ ارتفع جهده، فيحسب الجهاز مقاومة أكبر (R = V ÷ I) حتى OL. هذا هو سلوك المكثف السليم. لو بقيت القراءة صفراً فهو مقصور، ولو ظهرت OL فوراً (في المكثفات الكبيرة) فهو مقطوع.', 'A capacitor stores charge. The meter pushes a small current that charges it; as it fills, its voltage rises, so the meter computes a growing resistance (R = V ÷ I) until OL. That is a healthy capacitor. Stuck at zero means shorted; instant OL (on a large cap) means open.'),
+      }),
+      learned: [
+        L('المكثف يخزّن شحنة كهربائية، وقد يبقى مشحوناً بعد فصل الجهاز.', 'A capacitor stores charge and can stay charged after power is removed.'),
+        L('قِس الجهد وفرّغ المكثف قبل لمسه أو فحصه.', 'Measure the voltage and discharge before touching or testing it.'),
+        L('في المكثف الإلكتروليتي، الشريط على الجسم يدل على الطرف السالب.', 'On an electrolytic capacitor the stripe marks the negative leg.'),
+        L('على Ω: القراءة الصاعدة = سليم، صفر ثابت = مقصور، OL فوراً = مقطوع.', 'On Ω: climbing = good, stuck at zero = shorted, instant OL = open.'),
+      ],
+    },
+
+    // ───────────────────────────── الترانزستور
+    {
+      id: 'transistor', icon: 'NPN',
+      title: L('اكتشف الترانزستور', 'Identify the Transistor'),
+      brief: L('ترانزستور مُحيت الكتابة عن أرجله. باختبار الدايود تكتشف القاعدة (B) وهل هو NPN أو PNP.', 'A transistor whose pin markings rubbed off. Use the diode test to find the base (B) and whether it is NPN or PNP.'),
+      skills: [L('الترانزستور', 'Transistors'), L('اختبار الدايود', 'Diode test'), L('التفكير المنطقي', 'Reasoning')],
+      setup() {
+        const pins = shuffle(['B', 'C', 'E']);
+        const kind = pick(['NPN', 'PNP']);
+        return { parts: [{ type: 'transistor', id: 'Q', cx: 300, cy: 90, kind, pins, code: kind === 'NPN' ? 'BC547' : 'BC557', label: tr('ترانزستور', 'Transistor') }], data: { kind, base: String(pins.indexOf('B') + 1), pairs: {} } };
+      },
+      tasks: [
+        { text: L('لفّ المفتاح إلى اختبار الدايود ▶|', 'Turn the dial to diode test ▶|'), hint: L('الترانزستور من الداخل يشبه دايودين متصلين عند القاعدة.', 'Inside, a transistor looks like two diodes joined at the base.'), check: s => s.mode === 'DIODE' },
+        { text: L('جرّب 4 تركيبات مختلفة على الأقل للمجسين على الأرجل', 'Try at least 4 different probe combinations on the legs'), hint: L('مثلاً: الأحمر على 1 والأسود على 2، ثم اعكسهما، ثم جرّب 1 و3...', 'For example red on 1, black on 2, then swap, then try 1 and 3…'), check: (s, sc) => {
+          if (s.mode === 'DIODE' && on(s, 'Q')) sc.data.pairs[`${s.red.term}>${s.black.term}`] = s.ol ? 'OL' : s.value;
+          return Object.keys(sc.data.pairs).length >= 4;
+        } },
+        { text: L('اعثر على تركيبتين تعطيان قراءة (وليس OL)', 'Find the two combinations that give a reading (not OL)'), hint: L('الرجل المشتركة بين القراءتين هي القاعدة. إذا كان المجس الأحمر عليها فهو NPN، وإذا كان الأسود فهو PNP.', 'The leg shared by both readings is the base. If the red probe sits on it, it is NPN; if black, PNP.'), check: (s, sc) => {
+          if (s.mode === 'DIODE' && on(s, 'Q')) sc.data.pairs[`${s.red.term}>${s.black.term}`] = s.ol ? 'OL' : s.value;
+          return Object.values(sc.data.pairs).filter(v => v !== 'OL').length >= 2;
+        } },
+      ],
+      question: sc => {
+        const opts = [];
+        for (const b of ['1', '2', '3']) for (const k of ['NPN', 'PNP']) opts.push([tr(`القاعدة: الرجل ${b} · ${k}`, `Base: leg ${b} · ${k}`), b === sc.data.base && k === sc.data.kind]);
+        return {
+          text: tr('أي رجل هي القاعدة (B)، وما نوع الترانزستور؟', 'Which leg is the base (B), and what type is the transistor?'),
+          choices: opts.map(([label, ok]) => ({ label, ok })),
+          why: tr(`القراءتان كانتا من الرجل ${sc.data.base} إلى الرجلين الأخريين، فهي القاعدة. ${sc.data.kind === 'NPN' ? 'وكان المجس الأحمر (الموجب) على القاعدة، فهو NPN.' : 'وكان المجس الأسود على القاعدة، فهو PNP.'} القراءة الأعلى قليلاً تكون إلى الباعث (E)، والأقل إلى المجمّع (C). وبين C و E تظهر OL في الاتجاهين.`, `Both readings went from leg ${sc.data.base} to the other two, so it is the base. ${sc.data.kind === 'NPN' ? 'Red (positive) was on the base, so it is NPN.' : 'Black was on the base, so it is PNP.'} The slightly higher reading goes to the emitter (E), the lower to the collector (C). Between C and E you get OL both ways.`),
+        };
+      },
+      learned: [
+        L('الترانزستور ثنائي القطبية له ثلاث أرجل: القاعدة B، والمجمّع C، والباعث E.', 'A bipolar transistor has three legs: base B, collector C, emitter E.'),
+        L('من الداخل: وصلتان مثل الدايود تلتقيان عند القاعدة، فتعطي كل منهما ~0.6V.', 'Inside: two diode junctions meeting at the base, each reading ~0.6V.'),
+        L('NPN: الأحمر على القاعدة يعطي قراءتين. PNP: الأسود على القاعدة.', 'NPN: red on the base gives two readings. PNP: black on the base.'),
+        L('قراءة بين C و E (أو صفر) تعني أن الترانزستور تالف.', 'Any reading (or zero) between C and E means the transistor is damaged.'),
+      ],
+    },
+
+    // ───────────────────────────── الحساسات
+    {
+      id: 'sensors', icon: '↻☀',
+      title: L('المقاومة المتغيّرة والضوئية', 'Pot & Light Sensor'),
+      brief: L('مقاومة متغيّرة بمقبض (مثل زر الصوت) ومقاومة ضوئية LDR (مثل حساس إنارة الشارع). قِس كيف تتغير قيمتهما.', 'A potentiometer (like a volume knob) and a light-dependent resistor (like a street-light sensor). Measure how their values change.'),
+      skills: [L('المقاومة المتغيّرة', 'Potentiometer'), L('الحساسات', 'Sensors')],
+      setup() {
+        return {
+          h: 440,
+          parts: [
+            { type: 'pot', id: 'POT', cx: 190, cy: 110, R: 10000, pos: 0.3, label: tr('مقاومة متغيّرة', 'Potentiometer') },
+            { type: 'ldr', id: 'LDR', cx: 420, cy: 250, light: true, label: tr('مقاومة ضوئية LDR', 'LDR') },
+          ],
+          data: {},
+        };
+      },
+      tasks: [
+        { text: L('لفّ المفتاح إلى Ω على النطاق 20k', 'Set Ω on the 20k range'), hint: L('المقاومة المتغيّرة قيمتها الكلية 10kΩ.', 'The potentiometer is 10kΩ in total.'), check: s => s.mode === 'OHM' },
+        { text: L('قِس بين الطرفين 1 و 3 للمقاومة المتغيّرة', 'Measure between legs 1 and 3 of the pot'), hint: L('هذه القيمة الكلية، ولا تتغير مهما لففت المقبض.', 'This is the total value; it does not change when you turn the knob.'), check: s => s.mode === 'OHM' && onTerms(s, 'POT:1', 'POT:3') && valid(s) },
+        { text: L('قِس بين 1 و 2 (الطرف الأوسط) ثم لفّ المقبض بالأزرار ↺ ↻', 'Measure between 1 and 2 (middle leg), then turn the knob with ↺ ↻'), hint: L('الطرف الأوسط متصل بذراع ينزلق على المادة المقاوِمة.', 'The middle leg connects to a wiper sliding along the resistive track.'), check: (s, sc) => {
+          if (!(s.mode === 'OHM' && onTerms(s, 'POT:1', 'POT:2') && valid(s))) return false;
+          sc.data.pMin = Math.min(sc.data.pMin ?? Infinity, s.value); sc.data.pMax = Math.max(sc.data.pMax ?? 0, s.value);
+          return sc.data.pMax - sc.data.pMin > 2500;
+        } },
+        { text: L('قِس الـLDR والضوء مضاء، ثم أطفئ الضوء وقِس مرة أخرى', 'Measure the LDR with the light on, then turn it off and measure again'), hint: L('في الظلام تكبر القيمة كثيراً؛ قد تحتاج نطاق 200k.', 'In the dark the value jumps a lot; you may need the 200k range.'), check: (s, sc) => {
+          const p = sc.parts.find(x => x.id === 'LDR');
+          if (s.mode === 'OHM' && on(s, 'LDR') && valid(s)) sc.data[p.light ? 'lit' : 'dark'] = s.value;
+          return sc.data.lit != null && sc.data.dark != null;
+        } },
+      ],
+      question: () => ({
+        text: tr('ماذا يحدث لمقاومة الـLDR في الظلام؟', 'What happens to the LDR resistance in the dark?'),
+        choices: ch([[tr('ترتفع كثيراً', 'It rises a lot'), true], [tr('تنخفض', 'It falls'), false], [tr('لا تتغير', 'It stays the same'), false], [tr('تصبح صفراً', 'It becomes zero'), false]]),
+        why: tr('الـLDR مصنوع من مادة يقل فيها عدد الشحنات الحرة في الظلام، فترتفع مقاومته (من ~1kΩ في الضوء إلى مئات الكيلو أوم في الظلام). هكذا تعرف إنارة الشارع متى تضيء.', 'An LDR is made of a material with fewer free charges in the dark, so its resistance rises (from ~1kΩ in light to hundreds of kΩ in the dark). That is how street lights know when to switch on.'),
+      }),
+      learned: [
+        L('المقاومة المتغيّرة: الطرفان الخارجيان قيمة ثابتة، والطرف الأوسط يغيّر القيمة مع المقبض.', 'Potentiometer: the outer legs give a fixed value; the middle leg varies with the knob.'),
+        L('LDR: مقاومة صغيرة في الضوء، وكبيرة جداً في الظلام.', 'LDR: low resistance in light, very high in the dark.'),
+        L('كثير من الحساسات (حرارة، ضوء) هي مقاومات تتغير قيمتها، ونقيسها على Ω.', 'Many sensors (heat, light) are resistors whose value changes; you measure them on Ω.'),
+      ],
+    },
     // ───────────────────────────── السيارة
     {
       id: 'car', icon: '12V',
