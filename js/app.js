@@ -223,9 +223,18 @@
     $('#meterSwitch').hidden = !free;
     renderBench(); renderPanel(); renderFuses(); renderLibrary(); paintLabHead();
     requestAnimationFrame(() => { layout(); update(); });
-    const wantTour = S.pendingTour || (!Tour.seen() && !inExam() && !m.builder);
+    // الجولة تبدأ فقط باختيار الشخص؛ أول مرة نعرضها كدعوة صغيرة يمكن تجاهلها
+    const wantTour = S.pendingTour;
     S.pendingTour = false;
-    if (wantTour) setTimeout(() => { if (S.view === 'lab') Tour.start(S.analog ? 'analog' : 'digital'); }, 700);
+    if (wantTour) setTimeout(() => { if (S.view === 'lab') Tour.start(S.analog ? 'analog' : 'digital', paintTools); }, 500);
+    else if (!Tour.seen() && !store.get('tourOffered', false) && !inExam() && !m.builder) {
+      store.set('tourOffered', true);
+      setTimeout(() => {
+        if (S.view !== 'lab') return;
+        toast(tr('أول مرة مع الجهاز؟ جولة قصيرة تعرّفك على كل جزء فيه.', 'New to the meter? A short tour shows you every part.'), 'info',
+          { label: tr('ابدأ الجولة', 'Start the tour'), fn: () => Tour.start(S.analog ? 'analog' : 'digital', paintTools) });
+      }, 900);
+    }
   }
 
   // ── مكتبة المكونات (عمود المختبر) ──

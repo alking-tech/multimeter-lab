@@ -78,9 +78,11 @@
     if (!el) return false;
     el.scrollIntoView({ block: 'center', behavior: UI.reduce() ? 'auto' : 'smooth' });
     ring.hidden = false; tip.hidden = false;
-    tip.innerHTML = `<div class="tt-head"><b>${esc(T(step.t))}</b>${footer.count ? `<small>${footer.count}</small>` : ''}</div>
+    tip.innerHTML = `<div class="tt-head"><b>${esc(T(step.t))}</b>${footer.count ? `<small>${footer.count}</small>` : ''}
+      <button class="tt-x" data-t="close" aria-label="${tr('إغلاق', 'Close')}" title="${tr('إغلاق', 'Close')}">${icon('x')}</button></div>
       <p>${esc(T(step.d))}</p><div class="tt-actions">${footer.html}</div>`;
     footer.bind(tip);
+    tip.querySelector('[data-t="close"]').onclick = () => (active ? end() : hide());
     place(); setTimeout(place, 380);
     return true;
   }
