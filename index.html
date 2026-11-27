@@ -1,0 +1,275 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>مختبر الملتيميتر</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="مختبر افتراضي تفاعلي لتعلّم القياسات الكهربائية بجهاز الملتيميتر">
+<meta name="theme-color" content="#16302e">
+<meta name="author" content="ALKING TECH">
+<meta name="copyright" content="© 2026 ALKING TECH">
+<meta property="og:url" content="https://alking-tech.github.io/multimeter-lab/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="ALKING TECH">
+<meta property="og:title" content="مختبر الملتيميتر | ALKING TECH">
+<meta property="og:description" content="تعلّم القياسات الكهربائية بجهاز ملتيميتر يتصرّف مثل الحقيقي: 13 مهمة، ورشة دوائر، عربي وEnglish. مجاني وبدون تسجيل.">
+<meta property="og:image" content="https://alking-tech.github.io/multimeter-lab/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="ar_AR">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="مختبر الملتيميتر | ALKING TECH">
+<meta name="twitter:image" content="https://alking-tech.github.io/multimeter-lab/og-image.png">
+<!--PWA-->
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<script>window.ML_PWA = true;</script>
+<!--/PWA-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600&family=Readex+Pro:wght@500;700&display=swap">
+<link rel="stylesheet" href="css/style.css">
+<script src="js/i18n.js"></script>
+<script src="js/ui.js"></script>
+</head>
+<body data-view="home">
+<span hidden data-en-title="Multimeter Lab"></span>
+
+<header class="topbar">
+  <a class="brand" href="#home" aria-label="الصفحة الرئيسية" data-en-label="Home">
+    <svg viewBox="0 0 32 32" width="30" height="30" aria-hidden="true"><rect x="5" y="2" width="22" height="28" rx="5" fill="#f5b41a"/><rect x="8" y="5" width="16" height="8" rx="1.5" fill="#a8c3a0"/><circle cx="16" cy="21" r="5" fill="#1c1f22"/><path d="M16 21 L16 16.5" stroke="#fff" stroke-width="1.6" stroke-linecap="round"/></svg>
+    <span data-en="Multimeter Lab">مختبر الملتيميتر</span>
+  </a>
+  <span class="exam-bar" id="examBar" role="timer" hidden></span>
+  <nav class="nav" aria-label="التنقل" data-en-label="Navigation">
+    <a href="#home" data-nav="home"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/><path d="M10 20v-6h4v6"/></svg><span data-en="Missions">المهام</span></a>
+    <a href="#laws" data-nav="laws"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 4H6l6 8-6 8h12"/></svg><span data-en="Laws">القوانين</span></a>
+    <a href="#progress" data-nav="progress"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V10"/><path d="M10 20V4"/><path d="M16 20v-7"/><path d="M22 20H2"/></svg><span data-en="Progress">تقدّمي</span></a>
+    <a href="#guide" data-nav="guide" id="guideBtn"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"/><path d="M4 19V5"/><path d="M8 7h7"/></svg><span data-en="Guide">الدليل</span></a>
+  </nav>
+  <div class="top-actions">
+    <button class="btn ghost small" id="studentChip" hidden></button>
+    <button class="btn ghost small icon" id="langBtn"></button>
+    <button class="btn ghost small icon" id="muteBtn"></button>
+  </div>
+</header>
+
+<!-- ═══════════════ الصفحة الرئيسية ═══════════════ -->
+<main id="home" class="home">
+  <section class="hero">
+    <div class="hero-text">
+      <p class="eyebrow" data-en="A virtual electronics lab">مختبر كهرباء افتراضي</p>
+      <h1 data-en="Grab the probes, turn the dial, <em>read the display.</em>">أمسك المجسات، لفّ المفتاح، <em>واقرأ الشاشة.</em></h1>
+      <p class="lead-p" data-en="A multimeter that behaves like the real thing: it computes voltage, current and resistance from real circuits, beeps on continuity and blows its fuse if you get it wrong. Thirteen short missions take you from your first reading to full troubleshooting, plus a workshop where you build your own circuits.">جهاز ملتيميتر يتصرّف مثل الحقيقي: يحسب الجهد والتيار والمقاومة من دوائر حقيقية، يصفّر عند الاستمرارية، ويحرق الفيوز إذا أخطأت. ثلاث عشرة مهمة قصيرة تأخذك من أول قياس إلى تشخيص عطل كامل، وورشة تبني فيها دوائرك بنفسك.</p>
+      <div class="hero-actions">
+        <button class="btn primary" id="startBtn">ابدأ المهمة الأولى</button>
+        <a class="btn" href="#laws" id="lawsBtn"></a>
+        <button class="btn ghost" id="homeGuide"></button>
+        <button class="btn" id="certBtn" hidden></button>
+      </div>
+      <div class="stats" id="homeStats"></div>
+    </div>
+    <div class="hero-vis" aria-hidden="true">
+      <svg class="hv-svg" viewBox="0 0 360 170">
+        <path class="hv-wire" d="M40 40 H320 V140 H40 Z"/>
+        <path class="hv-flow" d="M40 40 H320 V140 H40 Z"/>
+        <rect x="22" y="62" width="36" height="58" rx="6" fill="#f59a2c"/><rect x="22" y="62" width="36" height="12" rx="4" fill="#1d1f22"/>
+        <text x="40" y="104" text-anchor="middle" font-family="Consolas,monospace" font-weight="700" font-size="13" fill="#1d1f22">9V</text>
+        <rect x="138" y="30" width="64" height="20" rx="9" fill="#dcc28e" stroke="#b49a6a"/>
+        <rect x="150" y="30" width="6" height="20" fill="#7a4a21"/><rect x="161" y="30" width="6" height="20" fill="#1b1b1b"/><rect x="172" y="30" width="6" height="20" fill="#d1352b"/><rect x="188" y="30" width="5" height="20" fill="#c9a13b"/>
+        <circle class="hv-led" cx="320" cy="90" r="26" fill="url(#hvGlow)"/>
+        <circle cx="320" cy="90" r="11" fill="#d8323a" stroke="#ffb3b6"/>
+        <path d="M196 140 l6 -10 6 20 6 -20 6 20 6 -20 6 10" stroke="#e6efea" stroke-width="2.5" fill="none"/>
+        <circle cx="104" cy="40" r="7" fill="#d7322f"/><circle cx="104" cy="140" r="7" fill="#111" stroke="#666"/>
+        <defs><radialGradient id="hvGlow"><stop offset="0" stop-color="#ff4d55" stop-opacity=".9"/><stop offset="1" stop-color="#ff3540" stop-opacity="0"/></radialGradient></defs>
+      </svg>
+      <div class="hv-lcd" id="hvLcd"><span class="m" id="hvMode">DC</span><b id="hvVal">9.41</b><span class="u" id="hvUnit">V</span></div>
+      <div class="hv-cap"><span id="hvCap"></span><b id="hvRange"></b></div>
+    </div>
+  </section>
+  <section class="exam-home" id="examHome" hidden></section>
+  <section class="missions">
+    <div class="sec-head"><div><h2 id="missionsTitle">المهام</h2><p id="missionsSub"></p></div></div>
+    <div class="levels" id="missionGrid"></div>
+  </section>
+  <section class="missions" id="extras">
+    <div class="sec-head"><div><h2 data-en="Build, learn, explore">ابنِ وتعلّم واستكشف</h2><p data-en="No stars here: experiment as much as you like.">بدون نجوم هنا: جرّب كما تحب.</p></div></div>
+    <div class="grid" id="extraGrid"></div>
+  </section>
+</main>
+
+<!-- ═══════════════ القوانين ═══════════════ -->
+<main id="laws" class="laws" hidden></main>
+
+<!-- ═══════════════ تقدّمي ═══════════════ -->
+<main id="progress" class="progress-page" hidden></main>
+
+<!-- ═══════════════ المختبر ═══════════════ -->
+<main id="lab" hidden>
+  <section class="lab" id="labArea">
+    <aside class="panel" id="panel">
+      <div class="panel-head">
+        <h2 id="pTitle"></h2>
+        <button class="btn ghost small p-toggle" id="pToggle" data-en="Details">التفاصيل</button>
+      </div>
+      <div class="progress" id="pProgress"></div>
+      <p class="p-current" id="pCurrent"></p>
+      <div class="panel-body">
+        <p class="p-brief" id="pBrief"></p>
+        <p class="p-warn" id="pWarn" hidden></p>
+        <div class="p-build" id="pBuild" hidden></div>
+        <ol class="tasks" id="pTasks"></ol>
+        <div class="p-row">
+          <button class="btn small" id="pHintBtn">تلميح</button>
+          <button class="btn ghost small" id="pRestart" data-en="Start over">ابدأ من جديد</button>
+        </div>
+        <p class="p-hint" id="pHint" hidden></p>
+        <div class="p-free" id="pFree" hidden>
+          <h4 data-en="Try these experiments">جرّب هذه التجارب</h4>
+          <ul>
+            <li data-en="Measure the 9V battery on the 2, 20 and 200 ranges and compare the precision.">قِس بطارية 9V على النطاقات 2 و20 و200 وقارن الدقة.</li>
+            <li data-en="Put the LED on diode test and reverse it. When does it light?">ضع الـLED في وضع الدايود واعكسه. متى يضيء؟</li>
+            <li data-en="Measure both resistors on 2k, then 200k. Why does OL appear?">قِس المقاومتين على 2k ثم 200k. لماذا تظهر OL؟</li>
+            <li data-en="Test the switch for continuity ON, then OFF.">افحص المفتاح بالاستمرارية وهو ON ثم OFF.</li>
+            <li data-en="What happens if you measure the battery on current mode?">ماذا يحدث لو قست البطارية وأنت على وضع التيار؟</li>
+          </ul>
+        </div>
+        <div class="p-colors" id="pColors" hidden></div>
+        <div class="p-chart" id="pChartBox" hidden>
+          <h4 data-en="Voltage–current curve (V–I)">منحنى الجهد والتيار (V–I)</h4>
+          <div id="pChart"></div>
+          <button class="btn primary" id="pRecord" disabled data-en="Record point">سجّل النقطة</button>
+          <p class="p-rechint" id="pRecHint"></p>
+        </div>
+        <div class="p-question" id="pQuestion" hidden></div>
+      </div>
+    </aside>
+
+    <section class="bench-wrap">
+      <div class="bench" id="bench"></div>
+      <p class="live" id="liveText" aria-live="polite"></p>
+    </section>
+
+    <section class="meter-wrap">
+      <div class="meter-switch" id="meterSwitch" role="group" aria-label="نوع الجهاز" data-en-label="Meter type" hidden>
+        <button data-kind="digital" aria-pressed="true" data-en="Digital">رقمي</button><button data-kind="analog" aria-pressed="false" data-en="Analog">تناظري</button>
+      </div>
+      <div class="meter" id="meter"><div id="meterDig"></div><div id="meterAna" hidden></div></div>
+      <div class="fuses" id="fuses"></div>
+    </section>
+
+    <svg class="leads" id="leads" aria-hidden="true"></svg>
+    <div class="probe red" id="probeRed" tabindex="0" role="button" aria-label="المجس الأحمر (+)" data-en-label="Red probe (+)"></div>
+    <div class="probe black" id="probeBlack" tabindex="0" role="button" aria-label="المجس الأسود (−)" data-en-label="Black probe (−)"></div>
+  </section>
+</main>
+
+<!-- ═══════════════ التوقيع ═══════════════ -->
+<footer class="site-foot">
+  <div class="sf-in">
+    <a class="sf-brand" href="https://www.instagram.com/alking.tech" target="_blank" rel="noopener" aria-label="ALKING TECH على إنستغرام" data-en-label="ALKING TECH on Instagram">
+      <span class="sf-lcd" dir="ltr"><span class="sf-k">ALKING</span><span class="sf-t">TECH</span></span>
+    </a>
+    <p class="sf-copy"><span data-en="© 2026 ALKING TECH. All rights reserved.">© 2026 جميع الحقوق محفوظة لدى ALKING TECH</span></p>
+    <a class="sf-insta" href="https://www.instagram.com/alking.tech" target="_blank" rel="noopener">
+      <svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><path d="M17.5 6.5h.01"/></svg>
+      <span dir="ltr">@alking.tech</span>
+    </a>
+  </div>
+</footer>
+
+<!-- ═══════════════ الدليل ═══════════════ -->
+<div class="drawer" id="guide" hidden>
+  <div class="drawer-bg" data-close-guide></div>
+  <article class="drawer-in" tabindex="-1" aria-label="الدليل" data-en-label="Guide">
+    <div class="drawer-head"><h2 data-en="Quick guide">الدليل السريع</h2><button class="btn ghost small" data-close-guide data-en="Close">إغلاق</button></div>
+
+    <section>
+      <h3 data-en="How to use the lab">كيف تستخدم المختبر</h3>
+      <ul>
+        <li data-en="<b>The dial:</b> tap any number around it, drag the knob, or use the arrow keys."><b>المفتاح الدوّار:</b> اضغط على أي رقم حوله، أو اسحب المقبض، أو استخدم الأسهم.</li>
+        <li data-en="<b>Probes:</b> drag them to the metal terminals, or tap a probe and then a terminal."><b>المجسات:</b> اسحبها إلى الأطراف المعدنية. أو اضغط على المجس ثم على الطرف.</li>
+        <li data-en="<b>Jacks:</b> tap the 10A or VΩmA jack to move the red lead."><b>المداخل:</b> اضغط على مدخل 10A أو VΩmA لنقل المجس الأحمر.</li>
+        <li data-en="<b>Parts:</b> switches, jumpers and supply buttons change when you tap them."><b>العناصر:</b> المفتاح والوصلة وأزرار المصدر تتغير بالضغط عليها.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h3 data-en="Core ideas">المفاهيم الأساسية</h3>
+      <dl class="concepts">
+        <dt data-en="Voltage V">الجهد V</dt><dd data-en="The electrical “pressure” between two points, like water pressure in a pipe. Measured in <b>parallel</b>.">«ضغط» الكهرباء بين نقطتين، مثل فرق الضغط في أنبوب ماء. يقاس على <b>التوازي</b>.</dd>
+        <dt data-en="Current A">التيار A</dt><dd data-en="How much charge passes per second, like the amount of water flowing. Measured in <b>series</b> after breaking the circuit.">كمية الشحنات التي تمر في الثانية، مثل كمية الماء المتدفقة. يقاس على <b>التوالي</b> بعد فتح الدائرة.</dd>
+        <dt data-en="Resistance Ω">المقاومة Ω</dt><dd data-en="How much a part opposes current, like a narrow pipe. Measured with the circuit <b>unpowered</b>.">ممانعة العنصر لمرور التيار، مثل ضيق الأنبوب. تقاس والدائرة <b>مفصولة</b> عن الكهرباء.</dd>
+        <dt data-en="Continuity">الاستمرارية</dt><dd data-en="Is the path connected? If the resistance is very low, the meter beeps.">هل المسار متصل؟ إذا كانت المقاومة صغيرة جداً يصفّر الجهاز.</dd>
+        <dt data-en="Diode">الدايود</dt><dd data-en="Lets current flow one way only. The meter shows the junction voltage forward and OL in reverse.">يمرّر التيار في اتجاه واحد. الجهاز يعرض جهد الوصلة في الاتجاه الأمامي، وOL في العكسي.</dd>
+      </dl>
+      <a class="btn small" href="#laws" data-en="All the laws, with examples">كل القوانين مع أمثلة</a>
+    </section>
+
+    <section>
+      <h3 data-en="Ohm's law: <bdi dir='ltr'>V = I × R</bdi>">قانون أوم: <bdi dir="ltr">V = I × R</bdi></h3>
+      <div class="ohm">
+        <label for="ohmV" data-en="Voltage (V)">الجهد (V)</label><input id="ohmV" type="number" inputmode="decimal" value="9" step="0.1" min="0">
+        <label for="ohmR" data-en="Resistance (Ω)">المقاومة (Ω)</label><input id="ohmR" type="number" inputmode="decimal" value="160" step="1" min="0">
+        <div class="ohm-out"><span data-en="Current <bdi dir='ltr'>I = V ÷ R</bdi> =">التيار <bdi dir="ltr">I = V ÷ R</bdi> =</span> <b id="ohmI">—</b></div>
+      </div>
+    </section>
+
+    <section>
+      <h3 data-en="Resistor color code">شيفرة ألوان المقاومات</h3>
+      <p data-en="The first two bands are digits, the third is the multiplier (number of zeros), gold is the tolerance. Example: brown, black, red = 10 × 100 = 1000Ω = 1kΩ.">الحلقتان الأوليان رقمان، والثالثة المضاعف (عدد الأصفار)، والذهبية التفاوت. مثال: بني، أسود، أحمر = 10 × 100 = 1000Ω = 1kΩ.</p>
+      <div id="guideColors"></div>
+    </section>
+
+    <section>
+      <h3 data-en="Ranges on this meter">نطاقات القياس في هذا الجهاز</h3>
+      <table class="rtable">
+        <tr><th data-en="V⎓ DC voltage">V⎓ جهد مستمر</th><td>200mV · 2V · 20V · 200V · 600V</td></tr>
+        <tr><th data-en="V~ AC voltage">V~ جهد متردد</th><td>200V · 600V</td></tr>
+        <tr><th data-en="A⎓ DC current">A⎓ تيار مستمر</th><td>200µA · 2mA · 20mA · 200mA · 10A</td></tr>
+        <tr><th data-en="Ω resistance">Ω مقاومة</th><td>200Ω · 2kΩ · 20kΩ · 200kΩ · 2MΩ</td></tr>
+        <tr><th data-en="•))) continuity">•))) استمرارية</th><td data-en="Beeps below 50Ω">صفارة عند أقل من 50Ω</td></tr>
+      </table>
+    </section>
+
+    <section>
+      <h3 data-en="The analog (needle) meter">الجهاز التناظري (أبو إبرة)</h3>
+      <ul>
+        <li data-en="Pick a range, then read the matching row: range 10 → the 0–10 row; range 2.5 → the 250 row ÷ 100.">اختر النطاق، ثم اقرأ صف الأرقام المناسب: نطاق 10 ← صف 0–10، نطاق 2.5 ← صف 250 ÷ 100.</li>
+        <li data-en="The Ω scale at the top runs backwards: 0 on the right, ∞ on the left. Multiply by the range (×10, ×1k…).">تدريج Ω في الأعلى معكوس: الصفر يمين و ∞ يسار. اضرب القراءة في المضاعف (×10، ×1k...).</li>
+        <li data-en="On Ω the black probe is positive, the opposite of a digital meter.">في وضع Ω المجس الأسود هو الموجب، عكس الجهاز الرقمي.</li>
+        <li data-en="Look straight down so the needle hides its reflection in the mirror strip.">انظر للإبرة عمودياً بحيث تختفي صورتها في المرآة، لتتجنب خطأ زاوية النظر.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h3 data-en="Safety tips">نصائح السلامة</h3>
+      <ul class="tips">
+        <li data-en="If you don't know the value, start on the highest range.">اختر النطاق الأكبر أولاً إذا لم تعرف القيمة المتوقعة.</li>
+        <li data-en="Check the red lead is in the right jack before measuring.">تأكد من المدخل الصحيح للمجس الأحمر قبل القياس.</li>
+        <li data-en="Never measure current in parallel, and never leave the dial on A when measuring voltage.">لا تقس التيار على التوازي، ولا تضع الجهاز على وضع A عند قياس الجهد.</li>
+        <li data-en="Disconnect power before measuring resistance or continuity.">افصل الكهرباء قبل قياس المقاومة أو الاستمرارية.</li>
+        <li data-en="Hold the probes only by their insulated grips.">أمسك المجسات من المقابض العازلة فقط.</li>
+        <li data-en="Turn the meter OFF when you finish to save the battery.">أوقف الجهاز (OFF) بعد الانتهاء للحفاظ على البطارية.</li>
+      </ul>
+    </section>
+  </article>
+</div>
+
+<div class="modal" id="modal" hidden><div class="modal-in" id="modalBody" role="dialog" aria-modal="true"></div></div>
+<div class="toasts" id="toasts"></div>
+
+<script src="js/engine.js"></script>
+<script src="js/meter.js"></script>
+<script src="js/parts.js"></script>
+<script src="js/missions.js"></script>
+<script src="js/builder.js"></script>
+<script src="js/laws.js"></script>
+<script src="js/progress.js"></script>
+<script src="js/sound.js"></script>
+<script src="js/meter-ui.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
