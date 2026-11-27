@@ -6,14 +6,14 @@
  * Single committed dark look (a real lab mat is dark), so no light theme.
  */
 :root {
-  --mat: #142c2a;
-  --mat-2: #193835;
-  --mat-dot: rgba(214, 236, 228, .07);
-  --surface: #0f211e;
-  --surface-2: #142b28;
-  --surface-3: #1b3733;
-  --line: rgba(220, 238, 231, .12);
-  --line-2: rgba(220, 238, 231, .22);
+  --mat: #0b1917;
+  --mat-2: #15302c;
+  --mat-dot: rgba(214, 236, 228, .05);
+  --surface: #152d29;
+  --surface-2: #1b3833;
+  --surface-3: #234640;
+  --line: rgba(220, 238, 231, .19);
+  --line-2: rgba(220, 238, 231, .30);
   --ink: #e8f0ec;
   --muted: #9db8af;
   --yellow: #f5b41a;
@@ -31,7 +31,7 @@
   --f-mono: ui-monospace, "Cascadia Mono", Consolas, monospace;
   --r: 16px;
   --r-sm: 11px;
-  --shadow: 0 1px 0 rgba(255, 255, 255, .035) inset, 0 10px 30px -12px rgba(0, 0, 0, .55);
+  --shadow: 0 1px 0 rgba(255, 255, 255, .06) inset, 0 2px 6px rgba(0, 0, 0, .35), 0 14px 30px -14px rgba(0, 0, 0, .75);
   --gut-l: max(16px, env(safe-area-inset-left, 0px));
   --gut-r: max(16px, env(safe-area-inset-right, 0px));
   --tabbar: 0px;
@@ -112,7 +112,7 @@ body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-a
   position: sticky; top: env(safe-area-inset-top, 0px); z-index: 30;
   display: flex; align-items: center; gap: 12px;
   padding-block: 8px; padding-left: var(--gut-l); padding-right: var(--gut-r);
-  background: rgba(15, 33, 30, .86); backdrop-filter: blur(10px) saturate(1.2); -webkit-backdrop-filter: blur(10px) saturate(1.2);
+  background: rgba(18, 38, 35, .92); backdrop-filter: blur(10px) saturate(1.2); -webkit-backdrop-filter: blur(10px) saturate(1.2);
   border-bottom: 1px solid var(--line);
 }
 .brand { display: flex; align-items: center; gap: 10px; text-decoration: none; font-family: var(--f-display); font-weight: 700; font-size: 17px; white-space: nowrap; }
@@ -204,7 +204,8 @@ body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-a
 .mcard:hover::before { opacity: 1; }
 .mcard:focus-visible { outline-offset: 3px; }
 .mcard.done { border-color: rgba(76, 195, 138, .35); }
-.mcard.free { background: transparent; border-style: dashed; box-shadow: none; }
+.mcard.free { background: linear-gradient(170deg, var(--surface-2), var(--surface)); border: 1.5px dashed rgba(245, 180, 26, .5); box-shadow: var(--shadow); }
+.mcard.free:hover { border-color: rgba(245, 180, 26, .85); }
 .mc-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
 .mc-lcd { direction: ltr; min-width: 52px; text-align: center; padding: 3px 10px; border-radius: 8px; background: var(--lcd); color: var(--lcd-ink); font: italic 700 15px var(--f-mono); box-shadow: inset 0 0 0 2px #17191c; }
 .mcard.free .mc-lcd { background: #2b2f34; color: var(--yellow); box-shadow: none; font-style: normal; }
@@ -692,7 +693,7 @@ body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-a
     position: fixed; z-index: 35; inset: auto 0 0 0; margin: 0; border-radius: 0; border: 0; border-top: 1px solid var(--line);
     display: grid; grid-template-columns: repeat(4, 1fr); gap: 0;
     padding: 6px max(8px, env(safe-area-inset-left, 0px)) calc(6px + env(safe-area-inset-bottom, 0px)) max(8px, env(safe-area-inset-right, 0px));
-    background: rgba(15, 33, 30, .94); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+    background: rgba(18, 38, 35, .97); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
   }
   .nav a { flex-direction: column; gap: 2px; padding: 5px 4px; font-size: 11.5px; border-radius: 12px; }
   .nav a span { display: block; }
