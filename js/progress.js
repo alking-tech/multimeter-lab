@@ -1,5 +1,5 @@
 /*
- * progress.js — صفحة «تقدّمي»: ملخص، مهارات، أوسمة، وسجل المهام
+ * progress.js — صفحة «تقدّمي»: ملخص، مهارات، أوسمة، وسجل التجارب
  * الإحصاءات الإضافية تُحفظ في المتصفح (ml.stats).
  */
 (function () {
@@ -25,21 +25,21 @@
   ];
 
   const BADGES = [
-    { id: 'first', ic: 'play', t: L('الخطوة الأولى', 'First step'), d: L('أنهِ أول مهمة', 'Finish your first mission'), ok: c => c.done >= 1 },
-    { id: 'steady', ic: 'target', t: L('يد ثابتة', 'Steady hand'), d: L('3 نجوم في 3 مهام', '3 stars on 3 missions'), ok: c => c.three >= 3 },
+    { id: 'first', ic: 'play', t: L('الخطوة الأولى', 'First step'), d: L('أنهِ أول تجربة', 'Finish your first experiment'), ok: c => c.done >= 1 },
+    { id: 'steady', ic: 'target', t: L('يد ثابتة', 'Steady hand'), d: L('3 نجوم في 3 تجارب', '3 stars on 3 experiments'), ok: c => c.three >= 3 },
     { id: 'fuse', ic: 'shield', t: L('صديق الفيوز', 'Fuse friend'), d: L('أنهِ «قياس التيار» بدون أي خطأ', 'Finish "Measuring Current" with no mistakes'), ok: c => c.p.current && c.p.current.mistakes === 0 },
-    { id: 'nohint', ic: 'eye', t: L('بلا تلميحات', 'No hints needed'), d: L('5 مهام بدون أي تلميح', '5 missions without a hint'), ok: c => c.noHint >= 5 },
+    { id: 'nohint', ic: 'eye', t: L('بلا تلميحات', 'No hints needed'), d: L('5 تجارب بدون أي تلميح', '5 experiments without a hint'), ok: c => c.noHint >= 5 },
     { id: 'graph', ic: 'chart', t: L('راسم المنحنيات', 'Curve plotter'), d: L('ارسم منحنى V–I بنفسك', 'Plot a V–I curve yourself'), ok: c => !!c.p.ohmlaw },
     { id: 'needle', ic: 'needle', t: L('قارئ الإبرة', 'Needle reader'), d: L('3 نجوم في «اقرأ الإبرة»', '3 stars on "Read the Needle"'), ok: c => c.p.analog && c.p.analog.stars === 3 },
     { id: 'doctor', ic: 'wrench', t: L('المشخّص', 'The fixer'), d: L('أصلح الكشّاف والسيارة', 'Diagnose the flashlight and the car'), ok: c => !!(c.p.flashlight && c.p.car) },
     { id: 'builder', ic: 'bolt', t: L('مهندس الورشة', 'Workshop engineer'), d: L('أكمل كل تحديات الورشة', 'Complete every workshop challenge'), ok: c => c.build >= 5 },
     { id: 'scholar', ic: 'sigma', t: L('الباحث', 'Scholar'), d: L('افتح صفحة القوانين', 'Open the Laws page'), ok: c => (c.s.laws || 0) >= 1 },
     { id: 'bilingual', ic: 'globe', t: L('ثنائي اللغة', 'Bilingual'), d: L('جرّب الواجهة بالإنجليزية', 'Try the interface in English'), ok: c => (c.s.lang || 0) >= 1 },
-    { id: 'persist', ic: 'refresh', t: L('المثابر', 'Persistent'), d: L('أعد مهمة لتحسين نتيجتك', 'Retry a mission to improve'), ok: c => (c.s.retry || 0) >= 1 },
-    { id: 'half', ic: 'flame', t: L('منتصف الطريق', 'Halfway there'), d: L('أنهِ نصف المهام', 'Finish half the missions'), ok: c => c.done >= Math.ceil(c.total / 2) },
+    { id: 'persist', ic: 'refresh', t: L('المثابر', 'Persistent'), d: L('أعد تجربة لتحسين نتيجتك', 'Retry an experiment to improve'), ok: c => (c.s.retry || 0) >= 1 },
+    { id: 'half', ic: 'flame', t: L('منتصف الطريق', 'Halfway there'), d: L('أنهِ نصف التجارب', 'Finish half the experiments'), ok: c => c.done >= Math.ceil(c.total / 2) },
     { id: 'quiz1', ic: 'target', t: L('اجتاز الاختبار', 'Quiz passer'), d: L('اجتز اختبار أي مسار', 'Pass any path quiz'), ok: c => c.quiz >= 1 },
     { id: 'quizall', ic: 'star', t: L('سيّد المسارات', 'Path master'), d: L('اجتز اختبارات المسارات الأربعة', 'Pass all four path quizzes'), ok: c => c.quiz >= 4 },
-    { id: 'all', ic: 'cap', t: L('خبير الملتيميتر', 'Multimeter expert'), d: L('أنهِ كل المهام', 'Finish every mission'), ok: c => c.done >= c.total },
+    { id: 'all', ic: 'cap', t: L('خبير الملتيميتر', 'Multimeter expert'), d: L('أنهِ كل التجارب', 'Finish every experiment'), ok: c => c.done >= c.total },
     { id: 'stars', ic: 'trophy', t: L('النجوم كاملة', 'All the stars'), d: L('اجمع كل النجوم', 'Collect every star'), ok: c => c.stars >= c.total * 3 },
   ];
 
@@ -77,10 +77,10 @@
       <section class="prog-hero">
         <div class="prog-ring">${UI.ring(c.done / c.total, 132, tr('نسبة الإنجاز', 'Completion'))}</div>
         <div class="prog-head">
-          <p class="eyebrow">${tr('تقدّمي', 'My progress')}</p>
-          <h1>${c.done === 0 ? tr('ابدأ رحلتك في القياس', 'Start your measuring journey') : c.done >= c.total ? tr('أنهيت كل المهام!', 'You finished every mission!') : tr(`باقي لك ${c.total - c.done} مهام`, `${c.total - c.done} missions to go`)}</h1>
+          <p class="eyebrow">${tr('تقدّمي في التعلّم', 'My learning progress')}</p>
+          <h1>${c.done === 0 ? tr('ابدأ رحلتك في القياس', 'Start your measuring journey') : c.done >= c.total ? tr('أنهيت كل التجارب!', 'You finished every experiment!') : tr(`باقي لك ${c.total - c.done} تجارب`, `${c.total - c.done} experiments to go`)}</h1>
           <div class="tiles">
-            ${tile(c.done, tr('مهام مكتملة', 'missions done'), 'tDone', `<small>/${c.total}</small>`)}
+            ${tile(c.done, tr('تجارب مكتملة', 'experiments done'), 'tDone', `<small>/${c.total}</small>`)}
             ${tile(c.stars, tr('نجوم', 'stars'), 'tStars', `<small>/${c.total * 3}</small>`)}
             ${tile(got.size, tr('أوسمة', 'badges'), 'tBadges', `<small>/${BADGES.length}</small>`)}
             <div class="tile"><b>${fmtTime(c.secs)}</b><span>${tr('وقت التعلّم', 'time learning')}</span></div>
@@ -105,9 +105,9 @@
       </section>
 
       <section class="prog-block">
-        <h2>${icon('book')} ${tr('سجل المهام', 'Mission record')}</h2>
+        <h2>${icon('book')} ${tr('سجل التجارب', 'Experiment record')}</h2>
         <div class="tbl-scroll"><table class="hist">
-          <thead><tr><th>#</th><th>${tr('المهمة', 'Mission')}</th><th>${tr('النجوم', 'Stars')}</th><th>${tr('الأخطاء', 'Mistakes')}</th><th>${tr('التلميحات', 'Hints')}</th><th>${tr('أفضل وقت', 'Best time')}</th><th></th></tr></thead>
+          <thead><tr><th>#</th><th>${tr('التجربة', 'Experiment')}</th><th>${tr('النجوم', 'Stars')}</th><th>${tr('الأخطاء', 'Mistakes')}</th><th>${tr('التلميحات', 'Hints')}</th><th>${tr('أفضل وقت', 'Best time')}</th><th></th></tr></thead>
           <tbody>${list.map(m => {
             const r = c.p[m.id];
             return `<tr class="${r ? '' : 'todo'}"><td>${m.num}</td><td>${esc(T(m.title))}</td>

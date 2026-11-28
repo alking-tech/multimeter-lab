@@ -1,5 +1,5 @@
 /* sw.js — يجعل التطبيق يعمل بدون إنترنت بعد أول فتح */
-const CACHE = 'multimeter-lab-v21';
+const CACHE = 'multimeter-lab-v24';
 const ASSETS = [
   './', './index.html', './css/style.css', './manifest.webmanifest',
   './js/engine.js', './js/meter.js', './js/parts.js', './js/missions.js',

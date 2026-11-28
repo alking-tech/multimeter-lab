@@ -1,7 +1,7 @@
 /*
- * missions.js — المهام التعليمية (عربي + English)
+ * missions.js — التجارب التعليمية (عربي + English)
  * ------------------------------------------------------------
- * كل مهمة:
+ * كل تجربة:
  *   setup()      → تبني المشهد (عناصر عشوائية في كل محاولة)
  *   tasks[]      → خطوات يتحقق منها التطبيق تلقائياً من القراءة الحية
  *   question()   → سؤال الختام بعد إنهاء الخطوات
@@ -750,7 +750,7 @@
   const FREE = {
     id: 'free', icon: '⚙', tasks: [],
     title: L('المختبر الحر', 'Free Lab'),
-    brief: L('كل العناصر أمامك بدون مهام. جرّب كل الأوضاع، وأخطئ بحرية، وراقب ماذا يحدث.', 'Every part, no tasks. Try every mode, make mistakes freely and watch what happens.'),
+    brief: L('كل العناصر أمامك بدون تجارب. جرّب كل الأوضاع، وأخطئ بحرية، وراقب ماذا يحدث.', 'Every part, no tasks. Try every mode, make mistakes freely and watch what happens.'),
     skills: [L('تجربة حرة', 'Free play')],
     setup() {
       return {

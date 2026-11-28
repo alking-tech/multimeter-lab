@@ -9,18 +9,18 @@
 <meta name="theme-color" content="#160F23">
 <meta name="author" content="ALKING TECH">
 <meta name="copyright" content="© 2026 ALKING TECH">
-<meta property="og:url" content="https://alking-tech.github.io/multimeter-lab/">
+<meta property="og:url" content="https://lab.alkingtech.com/">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="ALKING TECH">
 <meta property="og:title" content="مختبر الملتيميتر | ALKING TECH">
-<meta property="og:description" content="تعلّم القياسات الكهربائية بجهاز ملتيميتر يتصرّف مثل الحقيقي: 20 مهمة، ورشة دوائر، مكتبة قطع، عربي وEnglish. مجاني وبدون تسجيل.">
-<meta property="og:image" content="https://alking-tech.github.io/multimeter-lab/og-image.png">
+<meta property="og:description" content="تعلّم القياسات الكهربائية بجهاز ملتيميتر يتصرّف مثل الحقيقي: 20 تجربة، ورشة دوائر، مكتبة قطع، عربي وEnglish. مجاني وبدون تسجيل.">
+<meta property="og:image" content="https://lab.alkingtech.com/og-image.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:locale" content="ar_AR">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="مختبر الملتيميتر | ALKING TECH">
-<meta name="twitter:image" content="https://alking-tech.github.io/multimeter-lab/og-image.png">
+<meta name="twitter:image" content="https://lab.alkingtech.com/og-image.png">
 <!--PWA-->
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
@@ -33,7 +33,7 @@
 <link rel="stylesheet" href="css/style.css">
 <script>
 /* عدّاد الزوار (GoatCounter): بدون كوكيز وبدون بيانات شخصية، ويعمل على الموقع المنشور فقط */
-if (location.hostname === 'alking-tech.github.io') {
+if (['lab.alkingtech.com', 'alking-tech.github.io'].includes(location.hostname)) {
   var gc = document.createElement('script');
   gc.async = true; gc.src = 'https://gc.zgo.at/count.js';
   gc.setAttribute('data-goatcounter', 'https://alkingtech.goatcounter.com/count');
@@ -62,7 +62,7 @@ if (location.hostname === 'alking-tech.github.io') {
   </nav>
   <div class="top-actions">
     <button class="btn ghost small" id="studentChip" hidden></button>
-    <a class="btn ghost small icon" id="progBtn" href="#progress" aria-label="تقدّمي" data-en-label="My progress" title="تقدّمي"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 21h8"/><path d="M12 17v4"/><path d="M7 4h10v5a5 5 0 0 1-10 0z"/><path d="M17 5h3v2a3 3 0 0 1-3 3"/><path d="M7 5H4v2a3 3 0 0 0 3 3"/></svg></a>
+    <a class="btn ghost small icon" id="progBtn" href="#progress" aria-label="تقدّمي في التعلّم" data-en-label="My learning progress" title="تقدّمي في التعلّم"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 21h8"/><path d="M12 17v4"/><path d="M7 4h10v5a5 5 0 0 1-10 0z"/><path d="M17 5h3v2a3 3 0 0 1-3 3"/><path d="M7 5H4v2a3 3 0 0 0 3 3"/></svg></a>
     <button class="btn ghost small icon" id="langBtn"></button>
     <button class="btn ghost small icon" id="muteBtn"></button>
   </div>
@@ -72,9 +72,9 @@ if (location.hostname === 'alking-tech.github.io') {
 <main id="home" class="home">
   <section class="hero">
     <div class="hero-text">
-      <span class="pill" dir="ltr"><i class="pulse-dot"></i>Multimeter Lab</span>
+      <span class="pill"><i class="pulse-dot"></i><span data-en="Explore · Measure · Understand">استكشف · قِس · افهم</span></span>
       <h1 data-en="The Interactive <em>Multimeter</em> Lab">مختبر <em>الملتيميتر</em> التفاعلي</h1>
-      <p class="lead-p" data-en="Learn to use a multimeter from the basics to real-world work, with a realistic, hands-on simulation. The meter computes voltage, current and resistance from real circuits, beeps on continuity and blows its fuse if you get it wrong.">تعلّم استخدام جهاز الملتيميتر من الأساسيات إلى التطبيقات العملية عبر محاكاة واقعية وتفاعلية. الجهاز يحسب الجهد والتيار والمقاومة من دوائر حقيقية، يصفّر عند الاستمرارية، ويحرق الفيوز إذا أخطأت.</p>
+      <p class="lead-p" data-en="Discover the world of electrical measurement in an interactive lab that feels like the real thing. The meter computes voltage, current and resistance from real circuits, beeps on continuity and blows its fuse if you get it wrong.">اكتشف عالم القياسات الكهربائية من خلال مختبر تفاعلي يحاكي التجربة الواقعية. الجهاز يحسب الجهد والتيار والمقاومة من دوائر حقيقية، يصفّر عند الاستمرارية، ويحرق الفيوز إذا أخطأت.</p>
       <div class="hero-actions">
         <button class="btn primary big" id="startBtn"></button>
         <a class="btn big" href="#paths" id="pathsBtn"></a>
@@ -106,7 +106,7 @@ if (location.hostname === 'alking-tech.github.io') {
   <section class="features" aria-label="المزايا" data-en-label="Features">
     <div class="feat"><span class="feat-ic"><svg class="ic" viewBox="0 0 24 24"><path d="M13 2L4 14h7l-1 8 9-12h-7z"/></svg></span><b data-en="Realistic measurements">محاكاة واقعية للقياسات</b><small data-en="Real circuit physics, fuses and ranges">فيزياء دوائر حقيقية ونطاقات وفيوزات</small></div>
     <div class="feat"><span class="feat-ic"><svg class="ic" viewBox="0 0 24 24"><path d="M12 3l9 5-9 5-9-5z"/><path d="M3 13l9 5 9-5"/></svg></span><b data-en="Step-by-step paths">مسارات تعلّم متدرّجة</b><small data-en="From beginner to fault-finding">من المبتدئ إلى تشخيص الأعطال</small></div>
-    <div class="feat"><span class="feat-ic"><svg class="ic" viewBox="0 0 24 24"><path d="M9 3h6"/><path d="M10 3v6L4.5 18.5A1.7 1.7 0 0 0 6 21h12a1.7 1.7 0 0 0 1.5-2.5L14 9V3"/><path d="M7 15h10"/></svg></span><b data-en="Hands-on experiments">تجارب عملية متنوّعة</b><small data-en="20 missions and a circuit workshop">20 مهمة وورشة لبناء الدوائر</small></div>
+    <div class="feat"><span class="feat-ic"><svg class="ic" viewBox="0 0 24 24"><path d="M9 3h6"/><path d="M10 3v6L4.5 18.5A1.7 1.7 0 0 0 6 21h12a1.7 1.7 0 0 0 1.5-2.5L14 9V3"/><path d="M7 15h10"/></svg></span><b data-en="Hands-on experiments">تجارب عملية متنوّعة</b><small data-en="20 experiments and a circuit workshop">20 تجربة وورشة لبناء الدوائر</small></div>
     <div class="feat"><span class="feat-ic"><svg class="ic" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0"/><path d="M16 4.5a3.5 3.5 0 0 1 0 7"/><path d="M18 14a6.5 6.5 0 0 1 4 6"/></svg></span><b data-en="Made for everyone">مناسبة للجميع</b><small data-en="Arabic &amp; English, free, works offline">عربي وEnglish، مجانية، تعمل دون إنترنت</small></div>
   </section>
   <section class="start-path" id="startPath" hidden></section>
@@ -127,7 +127,7 @@ if (location.hostname === 'alking-tech.github.io') {
     <div class="levels" id="missionGrid"></div>
   </section>
   <section class="missions" id="extras">
-    <div class="sec-head"><div><h2 data-en="Build and experiment freely">ابنِ وجرّب بحرية</h2><p data-en="No stars here: experiment as much as you like.">بدون نجوم هنا: جرّب كما تحب.</p></div></div>
+    <div class="sec-head"><div><h2 data-en="Free experiment space">مساحة التجربة الحرة</h2><p data-en="No stars here: experiment as much as you like.">بدون نجوم هنا: جرّب كما تحب.</p></div></div>
     <div class="grid" id="extraGrid"></div>
   </section>
 </main>
@@ -254,6 +254,7 @@ if (location.hostname === 'alking-tech.github.io') {
       <span dir="ltr">@alking.tech</span>
     </a>
   </div>
+  <p class="sf-note">⚠ <span data-en="This is an educational simulation. It does not replace safety precautions when using a real meter.">هذه محاكاة لأغراض تعليمية، ولا تغني عن احتياطات السلامة عند استخدام جهاز حقيقي.</span></p>
   <p class="sf-copy"><span data-en="© 2026 ALKING TECH. All rights reserved.">© 2026 جميع الحقوق محفوظة لدى ALKING TECH</span></p>
 </footer>
 
@@ -261,7 +262,7 @@ if (location.hostname === 'alking-tech.github.io') {
 <div class="drawer" id="guide" hidden>
   <div class="drawer-bg" data-close-guide></div>
   <article class="drawer-in" tabindex="-1" aria-label="الدليل" data-en-label="Guide">
-    <div class="drawer-head"><h2 data-en="Quick guide">الدليل السريع</h2><button class="btn ghost small" data-close-guide data-en="Close">إغلاق</button></div>
+    <div class="drawer-head"><h2 data-en="User guide">دليل الاستخدام</h2><button class="btn ghost small" data-close-guide data-en="Close">إغلاق</button></div>
 
     <section>
       <h3 data-en="How to use the lab">كيف تستخدم المختبر</h3>
@@ -327,7 +328,8 @@ if (location.hostname === 'alking-tech.github.io') {
         <li data-en="If you don't know the value, start on the highest range.">اختر النطاق الأكبر أولاً إذا لم تعرف القيمة المتوقعة.</li>
         <li data-en="Check the red lead is in the right jack before measuring.">تأكد من المدخل الصحيح للمجس الأحمر قبل القياس.</li>
         <li data-en="Never measure current in parallel, and never leave the dial on A when measuring voltage.">لا تقس التيار على التوازي، ولا تضع الجهاز على وضع A عند قياس الجهد.</li>
-        <li data-en="Disconnect power before measuring resistance or continuity.">افصل الكهرباء قبل قياس المقاومة أو الاستمرارية.</li>
+        <li data-en="<b>Resistance and continuity are always measured with the circuit unpowered.</b> Any outside voltage gives a wrong reading and can damage the meter."><b>المقاومة والاستمرارية تُقاسان دائماً والدائرة غير موصولة بالكهرباء.</b> أي جهد خارجي يعطي قراءة خاطئة وقد يتلف الجهاز.</li>
+        <li data-en="This lab is an educational simulation. With a real meter, always follow its manual and real safety precautions.">هذا المختبر محاكاة تعليمية. مع الجهاز الحقيقي التزم دائماً بدليله واحتياطات السلامة الحقيقية.</li>
         <li data-en="Hold the probes only by their insulated grips.">أمسك المجسات من المقابض العازلة فقط.</li>
         <li data-en="Turn the meter OFF when you finish to save the battery.">أوقف الجهاز (OFF) بعد الانتهاء للحفاظ على البطارية.</li>
       </ul>

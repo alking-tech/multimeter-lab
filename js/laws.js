@@ -1,6 +1,6 @@
 /*
  * laws.js — صفحة «القوانين»: من أين أبدأ؟ والفرق بين الجهد والتيار والمقاومة،
- * وكل قانون مع شرح مبسّط ومثال محلول وحاسبة صغيرة ورابط لمهمة تطبّقه.
+ * وكل قانون مع شرح مبسّط ومثال محلول وحاسبة صغيرة ورابط لتجربة تطبّقه.
  */
 (function () {
   'use strict';
@@ -91,7 +91,7 @@
       <section class="laws-hero">
         <p class="eyebrow">${tr('مرجع الطالب', 'Student reference')}</p>
         <h1>${tr('القوانين: من أين أبدأ؟', 'The laws: where do I start?')}</h1>
-        <p class="lead-p">${tr('ابدأ من الخطوة 1 بالترتيب. كل خطوة تبني على التي قبلها، وكل قانون معه مثال محلول وحاسبة ومهمة تطبّقه بيدك.', 'Go through the steps in order. Each one builds on the last, and every law has a worked example, a calculator and a mission to try it yourself.')}</p>
+        <p class="lead-p">${tr('ابدأ من الخطوة 1 بالترتيب. كل خطوة تبني على التي قبلها، وكل قانون معه مثال محلول وحاسبة وتجربة تطبّقه بيدك.', 'Go through the steps in order. Each one builds on the last, and every law has a worked example, a calculator and an experiment to try it yourself.')}</p>
       </section>
       <ol class="path">${PATH.map(p => `<li><span class="pn">${p.n}</span><div><b>${esc(T(p.t))}</b><p>${esc(T(p.d))}</p></div></li>`).join('')}</ol>
 
@@ -102,6 +102,22 @@
           <tbody>${COMPARE.rows.map(r => `<tr>${r.map((c, i) => i ? `<td>${esc(T(c))}</td>` : `<th>${esc(T(c))}</th>`).join('')}</tr>`).join('')}</tbody>
         </table></div>
         <p class="note">${tr('قاعدة تحفظها: <b>الجهد بين نقطتين، والتيار خلال نقطة.</b> لذلك الفولتميتر على التوازي، والأميتر على التوالي.', 'Rule of thumb: <b>voltage is across two points, current is through a point.</b> So the voltmeter goes in parallel and the ammeter in series.')}</p>
+      </section>
+
+      <section class="laws-block">
+        <h2>${tr('الفرق بين DC و AC', 'DC vs AC')}</h2>
+        <div class="acdc">
+          <article><h3><span class="mode-chip">V⎓</span>${tr('تيار مستمر DC', 'Direct current (DC)')}</h3>
+            <svg viewBox="0 0 320 120" aria-hidden="true"><path d="M20 60H300" stroke="rgba(220,205,255,.25)"/><path d="M20 10V110" stroke="rgba(220,205,255,.25)"/>
+              <path d="M20 34H300" stroke="#ffd166" stroke-width="4"/><text x="300" y="26" text-anchor="end" fill="#ffd166" font-size="13" font-weight="700">+9V</text><text x="26" y="74" fill="#a99bc4" font-size="11">0V</text></svg>
+            <p>${tr('اتجاه واحد ثابت، وقيمته لا تتغير مع الزمن. مثل البطاريات وشواحن الجوال ولوحات الإلكترونيات. على الجهاز: <b>V⎓</b> و<b>A⎓</b>.', 'One steady direction, constant over time. Batteries, phone chargers and electronics boards. On the meter: <b>V⎓</b> and <b>A⎓</b>.')}</p></article>
+          <article><h3><span class="mode-chip">V~</span>${tr('تيار متردد AC', 'Alternating current (AC)')}</h3>
+            <svg viewBox="0 0 320 120" aria-hidden="true"><path d="M20 60H300" stroke="rgba(220,205,255,.25)"/><path d="M20 10V110" stroke="rgba(220,205,255,.25)"/>
+              <path d="M20 60 C 40 -6, 62 -6, 82 60 S 124 126, 144 60 S 186 -6, 206 60 S 248 126, 268 60 S 290 10, 300 22" fill="none" stroke="#b8e986" stroke-width="4"/>
+              <text x="300" y="26" text-anchor="end" fill="#b8e986" font-size="13" font-weight="700">220V ~ 50Hz</text></svg>
+            <p>${tr('يعكس اتجاهه باستمرار (50 مرة في الثانية في معظم دولنا). مثل كهرباء المنزل. على الجهاز: <b>V~</b>، والقراءة هي القيمة الفعّالة RMS.', 'Keeps reversing direction (50 times a second in most of our countries). Household power. On the meter: <b>V~</b>, and the reading is the RMS value.')}</p></article>
+        </div>
+        <p class="note">${tr('خطأ شائع: قياس مقبس المنزل على V⎓ أو البطارية على V~ يعطي قراءة خاطئة. تأكد من الرمز قبل القياس.', 'Common mistake: measuring a wall socket on V⎓, or a battery on V~, gives a wrong reading. Check the symbol before measuring.')}</p>
       </section>
 
       <section class="laws-block">

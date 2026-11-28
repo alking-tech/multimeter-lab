@@ -1,6 +1,6 @@
 /*
  * pages.js — صفحات المنصة: مسارات التعلم، صفحة الدرس، المصادر، عن المنصة.
- * المحتوى يأتي من المهام نفسها (Missions) حتى لا يتكرر، والدروس الخاصة
+ * المحتوى يأتي من التجارب نفسها (Missions) حتى لا يتكرر، والدروس الخاصة
  * (الجولة، القوانين، القطع) معرّفة هنا.
  * © 2026 ALKING TECH
  */
@@ -41,7 +41,7 @@
       <circle cx="222" cy="56" r="30" fill="url(#aB)"/><path d="M214 70V48a8 8 0 0 1 16 0v22z" fill="#ffd257"/></svg>`,
   };
 
-  // ── الدروس الخاصة (ليست مهام بنجوم) ──
+  // ── الدروس الخاصة (ليست تجارب بنجوم) ──
   const SPECIAL = {
     tour: { href: '#tour', icon: '?', look: 'meter', mins: 3,
       title: L('التعرّف على جهاز الملتيميتر', 'Meet the multimeter'),
@@ -76,7 +76,7 @@
       lessons: ['free', 'build'] },
   ];
 
-  // صورة الدرس: شكل القطعة الأساسية في المهمة إن وجدت
+  // صورة الدرس: شكل القطعة الأساسية في التجربة إن وجدت
   const LOOK_OF = { battery: 'battery', resistors: 'resistor', cables: 'switch', led: 'led', current: 'lamp', series: 'resistor', divider: 'resistor', ohmlaw: 'resistor', capacitor: 'capacitor', transistor: 'transistor', sensors: 'ldr', car: 'battery', flashlight: 'lamp', build: 'led', parallel: 'resistor', ntc: 'ntc', relay: 'relay' };
 
   let ctx = null;   // { progress, stats, tourSeen, levelOf, stars, inExam }
@@ -204,11 +204,11 @@
       </header>
       <div class="res-grid">
         ${tile('#tour', 'eye', tr('تعرّف على الجهاز', 'Meet the meter'), tr('جولة تفاعلية تشرح كل جزء في الجهاز خطوة بخطوة.', 'An interactive tour of every part of the meter, step by step.'))}
-        ${tile('#guide', 'book', tr('دليل الجهاز', 'Meter guide'), tr('كيف تستخدم المختبر، النطاقات، الجهاز التناظري، وشيفرة ألوان المقاومات.', 'Using the lab, the ranges, the analog meter and the resistor colour code.'), '', 'data-open-guide')}
+        ${tile('#guide', 'book', tr('دليل الاستخدام', 'User guide'), tr('كيف تستخدم المختبر، النطاقات، الجهاز التناظري، وشيفرة ألوان المقاومات.', 'Using the lab, the ranges, the analog meter and the resistor colour code.'), '', 'data-open-guide')}
         ${tile('#laws', 'sigma', tr('القوانين', 'The laws'), tr('الفرق بين الجهد والتيار والمقاومة، وقانون أوم والقدرة، مع حاسبات.', "Voltage vs current vs resistance, Ohm's law and power, with calculators."), '<span class="chip">V = I × R</span>')}
         ${tile('#components', 'resistor', tr('القطع الإلكترونية', 'Electronic components'), tr(`${Components.PARTS.length} قطعة: شكلها ورمزها وكيف تفحصها والقراءة السليمة وأعطالها.`, `${Components.PARTS.length} parts: looks, symbol, how to test, the healthy reading and faults.`), `<span class="chip">${tr('مكتبة', 'Library')}</span>`)}
         ${tile('#glossary', 'globe', tr('قاموس المصطلحات', 'Glossary'), tr(`${Learn.GLOSSARY.length} مصطلحاً بالعربي والإنجليزي مع الرمز والمعنى.`, `${Learn.GLOSSARY.length} terms in Arabic and English with symbol and meaning.`), '<span class="chip">Voltage = الجهد</span>')}
-        ${tile('#progress', 'trophy', tr('تقدّمي وشاراتي', 'My progress & badges'), tr('المهارات، والشارات، وسجل المهام، والشهادة عند الإكمال.', 'Skills, badges, mission history and your certificate when complete.'))}
+        ${tile('#progress', 'trophy', tr('تقدّمي في التعلّم', 'My learning progress'), tr('المهارات، والشارات، وسجل التجارب، والشهادة عند الإكمال.', 'Skills, badges, experiment history and your certificate when complete.'))}
       </div>
       <section class="safety">
         <h2>${icon('shield')} ${tr('قواعد السلامة الذهبية', 'Golden safety rules')}</h2>
@@ -231,7 +231,7 @@
         <p class="lead-p">${tr('مختبر الملتيميتر منصة مجانية من ALKING TECH لتعلّم القياسات الكهربائية. لا نريد موقعاً جميلاً فقط: الجهاز والدائرة هنا يتصرّفان مثل الحقيقيين، فتتعلّم من الخطأ قبل أن تكلّفك القطع.', 'Multimeter Lab is a free platform by ALKING TECH for learning electrical measurement. Not just a pretty site: the meter and circuits here behave like the real thing, so you learn from mistakes before they cost you parts.')}</p>
       </header>
       <div class="about-stats">
-        <div><b>${n.missions}</b><span>${tr('مهمة تفاعلية', 'interactive missions')}</span></div>
+        <div><b>${n.missions}</b><span>${tr('تجربة تفاعلية', 'interactive experiments')}</span></div>
         <div><b>${n.parts}</b><span>${tr('قطعة إلكترونية', 'electronic parts')}</span></div>
         <div><b>${n.challenges}</b><span>${tr('تحديات بناء', 'build challenges')}</span></div>
         <div><b>2</b><span>${tr('لغتان', 'languages')}</span></div>
@@ -243,7 +243,7 @@
       </div>
       <section class="about-brand">
         <svg class="logo" viewBox="0 0 40 36" width="56" height="50" aria-hidden="true"><path d="M20 3 L37.5 33 H2.5 Z" fill="none" stroke="#D5AD59" stroke-width="3.4" stroke-linejoin="round"/><path d="M20 14.5 L28.5 29 H11.5 Z" fill="#D5AD59"/><path d="M21.6 17.5 L17.6 23.6 H20.6 L18.6 28" fill="none" stroke="#160F23" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        <div><h2 dir="ltr">ALKING <i>TECH</i></h2><p>${tr('صُمّم وطُوّر بواسطة ALKING TECH. جميع الحقوق محفوظة. الاستخدام للتعلّم مجاني، والنسخ أو إعادة النشر يحتاج إذناً.', 'Designed and built by ALKING TECH. All rights reserved. Free to use for learning; copying or republishing needs permission.')}</p></div>
+        <div><h2 dir="ltr">ALKING <i>TECH</i></h2><p>${tr('صُمّم وطُوّر بواسطة ALKING TECH. جميع الحقوق محفوظة. الاستخدام للتعلّم مجاني، والنسخ أو إعادة النشر يحتاج إذناً. المنصة محاكاة تعليمية ولا تغني عن احتياطات السلامة مع الأجهزة الحقيقية.', 'Designed and built by ALKING TECH. All rights reserved. Free to use for learning; copying or republishing needs permission. This is an educational simulation and does not replace safety precautions with real equipment.')}</p></div>
         <a class="btn primary" href="https://www.instagram.com/alking.tech" target="_blank" rel="noopener"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><path d="M17.5 6.5h.01"/></svg><span dir="ltr">@alking.tech</span></a>
       </section>`;
   }

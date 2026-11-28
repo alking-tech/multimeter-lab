@@ -1,6 +1,6 @@
 /*
  * app.js — واجهة التطبيق: الصفحة الرئيسية، المختبر، ورشة الدوائر، القوانين،
- * المجسات، المهام، الرسم البياني، وضع الاختبار، الشهادة، اللغة، وحفظ التقدّم.
+ * المجسات، التجارب، الرسم البياني، وضع الاختبار، الشهادة، اللغة، وحفظ التقدّم.
  */
 (function () {
   'use strict';
@@ -106,7 +106,7 @@
     const fresh = doneCount === 0;
     $('#homeStats').innerHTML = fresh ? '' : `
       <div class="stat-ring">${UI.ring(doneCount / list.length, 76, tr('نسبة الإنجاز', 'Completion'))}
-        <div class="stat"><b id="hsDone">0</b><span>${tr(`من ${list.length} مهمة`, `of ${list.length} missions`)}</span></div></div>
+        <div class="stat"><b id="hsDone">0</b><span>${tr(`من ${list.length} تجربة`, `of ${list.length} experiments`)}</span></div></div>
       <div class="stat"><b><span id="hsStars">0</span><small>/${list.length * 3}</small></b><span>${tr('نجوم', 'stars')}</span></div>
       <div class="stat"><b><span id="hsBuild">0</span><small>/${Builder.CHALLENGES.length}</small></b><span>${tr('تحديات الورشة', 'workshop challenges')}</span></div>`;
     UI.countUp($('#hsDone'), doneCount); UI.countUp($('#hsStars'), totalStars); UI.countUp($('#hsBuild'), Builder.doneCount());
@@ -125,7 +125,7 @@
       const done = examDone(), over = !examActive();
       $('#examHome').innerHTML = `<h2>${icon('clock')} ${esc(S.exam.title)}</h2>
         <p>${over ? tr('انتهى وقت الاختبار. نتائجك وصلت للمعلم.', 'Time is up. Your results reached the teacher.')
-          : tr(`أنجز المهام التالية قبل انتهاء الوقت. لكل مهمة محاولة واحدة${S.exam.hints ? '' : '، والتلميحات مغلقة'}.`, `Finish these missions before time runs out. One attempt each${S.exam.hints ? '' : ', hints are off'}.`)}</p>
+          : tr(`أنجز التجارب التالية قبل انتهاء الوقت. لكل تجربة محاولة واحدة${S.exam.hints ? '' : '، والتلميحات مغلقة'}.`, `Finish these experiments before time runs out. One attempt each${S.exam.hints ? '' : ', hints are off'}.`)}</p>
         <div class="grid">${S.exam.missions.map(id => Missions.byId(id)).filter(Boolean).map(m => {
           const d = done.has(m.id);
           const status = d ? tr('✓ تم التسليم', '✓ Submitted') : over ? tr('انتهى الوقت', 'Time up') : tr('محاولة واحدة', 'One attempt');
@@ -171,14 +171,14 @@
     const steps = [
       { href: '#tour', ic: 'eye', t: tr('تعرّف على الجهاز', 'Meet the meter'), d: tr('جولة قصيرة على كل جزء وماذا يفعل', 'A short tour of every part and what it does'), done: Tour.seen() },
       { href: '#laws', ic: 'sigma', t: tr('افهم الأساسيات', 'Learn the basics'), d: tr('الفرق بين الجهد والتيار والمقاومة', 'Voltage vs current vs resistance'), done: (st.laws || 0) > 0 },
-      { href: '#lab-battery', ic: 'play', t: tr('أول قياس لك', 'Your first reading'), d: tr('مهمة «البطارية الضعيفة»', 'The "Weak Battery" mission'), done: !!S.progress.battery },
+      { href: '#lab-battery', ic: 'play', t: tr('أول قياس لك', 'Your first reading'), d: tr('تجربة «البطارية الضعيفة»', 'The "Weak Battery" experiment'), done: !!S.progress.battery },
     ];
     const box = $('#startPath');
     const allDone = steps.every(x => x.done);
     box.hidden = allDone || inExam();
     if (box.hidden) return;
     const nextI = steps.findIndex(x => !x.done);
-    box.innerHTML = `<div class="sec-head"><div><h2>${tr('ابدأ من هنا', 'Start here')}</h2><p>${tr('ثلاث خطوات قصيرة قبل المهام، بالترتيب.', 'Three short steps before the missions, in order.')}</p></div></div>
+    box.innerHTML = `<div class="sec-head"><div><h2>${tr('ابدأ من هنا', 'Start here')}</h2><p>${tr('ثلاث خطوات قصيرة قبل التجارب، بالترتيب.', 'Three short steps before the experiments, in order.')}</p></div></div>
       <ol class="sp-steps">${steps.map((x, i) => `<li><a class="sp-step ${x.done ? 'done' : ''} ${i === nextI ? 'next' : ''}" href="${x.href}">
         <span class="sp-n">${x.done ? icon('check') : i + 1}</span>
         <span class="sp-body"><b>${x.t}</b><small>${x.d}</small></span>${icon(x.ic, 'sp-ic')}</a></li>`).join('')}</ol>`;
@@ -290,7 +290,7 @@
     });
   }
 
-  // ── لوحة المهمة ──
+  // ── لوحة التجربة ──
   function renderPanel() {
     const m = S.mission, isFree = m.id === 'free', build = !!m.builder, plain = isFree || build;
     $('#pTitle').innerHTML = plain ? esc(T(m.title)) : `<span class="pnum">${m.num}</span>${esc(T(m.title))}`;
@@ -373,7 +373,7 @@
     modal(`
       <div class="finish">
         <div class="big-stars">${stars(st)}</div>
-        <h2>${tr(`أنجزت مهمة «${esc(T(m.title))}»`, `Mission complete: “${esc(T(m.title))}”`)}</h2>
+        <h2>${tr(`أنجزت تجربة «${esc(T(m.title))}»`, `Experiment complete: “${esc(T(m.title))}”`)}</h2>
         <p class="meta"><span>${icon('clock')} ${Math.floor(secs / 60)}:${String(secs % 60).padStart(2, '0')}</span><span>${icon('alert')} ${tr('الأخطاء', 'Mistakes')}: ${S.mistakes}</span><span>${icon('bulb')} ${tr('التلميحات', 'Hints')}: ${S.hints}</span></p>
         ${fresh.length ? `<div class="new-badges">${fresh.map(b => `<span class="new-badge">${icon(b.ic)} ${tr('وسام جديد', 'New badge')}: ${esc(T(b.t))}</span>`).join('')}</div>` : ''}
         <div class="why"><b>${tr('لماذا؟', 'Why?')}</b> ${esc(q.why)}</div>
@@ -381,9 +381,9 @@
         <ul class="learned">${m.learned.map(l => `<li>${icon('check')}<span>${esc(T(l))}</span></li>`).join('')}</ul>
         <div class="modal-actions">
           ${all ? `<button class="btn primary" data-cert="1">${icon('cap')} ${tr('احصل على شهادتك', 'Get your certificate')}</button>` : ''}
-          ${nextM ? `<button class="btn ${all ? '' : 'primary'}" data-go="lab-${nextM.id}">${tr('المهمة التالية', 'Next mission')}: ${esc(T(nextM.title))}</button>` : ''}
+          ${nextM ? `<button class="btn ${all ? '' : 'primary'}" data-go="lab-${nextM.id}">${tr('التجربة التالية', 'Next experiment')}: ${esc(T(nextM.title))}</button>` : ''}
           ${inExam() ? '' : `<button class="btn" data-again="1">${icon('refresh')} ${tr('أعد المحاولة', 'Retry')}</button>`}
-          <button class="btn ghost" data-go="home">${inExam() ? tr('قائمة الاختبار', 'Exam list') : tr('قائمة المهام', 'All missions')}</button>
+          <button class="btn ghost" data-go="home">${inExam() ? tr('قائمة الاختبار', 'Exam list') : tr('قائمة التجارب', 'All experiments')}</button>
         </div>
       </div>`);
     renderQuestion();
@@ -551,6 +551,21 @@
   }
 
   // ── الشرح اللحظي ──
+  // ما معنى الرقم على الشاشة؟ (الوحدة بالكلمات + تحويل البادئة)
+  const UNIT_WORD = { V: LV('فولت', 'volts'), A: LV('أمبير', 'amps'), Ω: LV('أوم', 'ohms') };
+  const PREFIX = { m: LV('ملّي = جزء من ألف', 'milli = one thousandth'), k: LV('كيلو = ألف', 'kilo = a thousand'), M: LV('ميغا = مليون', 'mega = a million'), µ: LV('مايكرو = جزء من مليون', 'micro = one millionth') };
+  const KIND = { VDC: LV('جهد مستمر', 'DC voltage'), VAC: LV('جهد متردد', 'AC voltage'), ADC: LV('تيار مستمر', 'DC current'), OHM: LV('مقاومة', 'resistance'), DIODE: LV('جهد الوصلة', 'junction voltage') };
+  function readingLine(m, pos, mode, both) {
+    if (!both || m.ol || m.garbage || !KIND[mode] || !pos.unit) return '';
+    const base = pos.unit.slice(-1), pre = pos.unit.length > 1 ? pos.unit[0] : '';
+    if (!UNIT_WORD[base]) return '';
+    const shown = (m.value * pos.scale).toFixed(pos.dec);
+    const v = Math.abs(m.value);
+    const plain = v >= 1000 ? Math.round(v).toLocaleString('en-US') : +v.toPrecision(3);
+    const sign = m.value < 0 && Math.abs(m.value) > 1e-6 ? '−' : '';
+    return `<span class="rd"><span class="rd-v" dir="ltr">${sign}${shown.replace('-', '')} ${pos.unit}</span><span>${T(KIND[mode])} = <b>${sign}${plain} ${T(UNIT_WORD[base])}</b>${pre && PREFIX[pre] ? ` <small>(${T(PREFIX[pre])})</small>` : ''}</span></span>`;
+  }
+
   function explain(s, m) {
     const pos = curPos(), both = s.red && s.black, mode = pos.mode, lines = [];
     if (mode === 'OFF') return tr('<b>الجهاز مطفأ.</b> لفّ المفتاح الدوّار لاختيار نوع القياس.', '<b>The meter is off.</b> Turn the dial to choose what to measure.');
@@ -582,6 +597,8 @@
       CONT: tr('<b>استمرارية •))):</b> يصفّر الجهاز إذا كانت المقاومة أقل من 50Ω، أي أن المسار متصل.', '<b>Continuity •))):</b> beeps below 50Ω, meaning the path is connected.'),
       DIODE: tr('<b>اختبار دايود ▶|:</b> يمرّر 1mA من المجس الأحمر ويعرض الجهد على الوصلة. أمامي: ~0.6V للسيليكون و~1.8V للـLED. عكسي: OL.', '<b>Diode test ▶|:</b> sends 1mA from the red probe and shows the junction voltage. Forward: ~0.6V silicon, ~1.8V LED. Reverse: OL.'),
     }[mode]);
+    const rd = readingLine(m, pos, mode, both);
+    if (rd) lines.push(rd);
     if (!both) {
       lines.push(S.sel ? tr(`اخترت المجس ${S.sel === 'red' ? 'الأحمر' : 'الأسود'}. اضغط الآن على أي طرف معدني لتضعه عليه.`, `You picked the ${S.sel} probe. Now tap any metal terminal to place it.`)
         : tr('اسحب المجسين إلى أطراف العنصر، أو اضغط على المجس ثم على الطرف.', 'Drag the probes onto the terminals, or tap a probe then a terminal.'));
@@ -881,7 +898,7 @@
         <h2>${tr('شهادة إتمام', 'Certificate of Completion')}</h2>
         <p>${tr('تشهد بأن', 'This certifies that')}</p>
         <p class="cert-name" id="certName">${esc(name || placeholder)}</p>
-        <p>${tr(`أتمّ جميع مهام القياس الكهربائي (${list.length} مهمة) بنجاح،<br>وحصل على <b>${total}</b> من ${list.length * 3} نجمة.`, `has completed all ${list.length} electrical measurement missions<br>and earned <b>${total}</b> of ${list.length * 3} stars.`)}</p>
+        <p>${tr(`أتمّ جميع تجارب القياس الكهربائي (${list.length} تجربة) بنجاح،<br>وحصل على <b>${total}</b> من ${list.length * 3} نجمة.`, `has completed all ${list.length} electrical measurement experiments<br>and earned <b>${total}</b> of ${list.length * 3} stars.`)}</p>
         <div class="cert-skills">${[tr('الجهد V', 'Voltage V'), tr('التيار A', 'Current A'), tr('المقاومة Ω', 'Resistance Ω'), tr('الاستمرارية', 'Continuity'), tr('الدايود', 'Diodes'), tr('قانون أوم', "Ohm's law"), tr('التشخيص', 'Troubleshooting')].map(s => `<span>${s}</span>`).join('')}</div>
         <p class="cert-date">${esc(date)}</p><p class="cert-sign">ALKING TECH · @alking.tech</p></div></div>
       ${S.student ? '' : `<label class="cert-label" for="certInput">${tr('اسمك على الشهادة', 'Name on the certificate')}</label><input id="certInput" class="cert-input" maxlength="40" value="${esc(name)}">`}
@@ -955,7 +972,7 @@
       if (S.view === 'lab' && S.mission && !S.finished) {
         logEvent('timeout', '');
         go('home');
-        modal(`<div class="finish"><h2>${tr('انتهى وقت الاختبار', 'Exam time is up')}</h2><p class="meta">${tr('المهام التي أنهيتها وصلت للمعلم.', 'The missions you finished reached the teacher.')}</p><div class="modal-actions"><button class="btn primary" data-go="home">${tr('حسناً', 'OK')}</button></div></div>`);
+        modal(`<div class="finish"><h2>${tr('انتهى وقت الاختبار', 'Exam time is up')}</h2><p class="meta">${tr('التجارب التي أنهيتها وصلت للمعلم.', 'The experiments you finished reached the teacher.')}</p><div class="modal-actions"><button class="btn primary" data-go="home">${tr('حسناً', 'OK')}</button></div></div>`);
       } else if (S.view === 'home') renderHome();
     }
     if (left > 0) S.examOverShown = false;
@@ -965,7 +982,7 @@
     modal(`
       <form class="name-form" id="nameForm">
         <h2>${tr('أهلاً في مختبر الفصل', 'Welcome to the class lab')}</h2>
-        <p>${tr('اكتب اسمك حتى يرى المعلم تقدّمك في المهام.', 'Enter your name so your teacher can see your progress.')}</p>
+        <p>${tr('اكتب اسمك حتى يرى المعلم تقدّمك في التجارب.', 'Enter your name so your teacher can see your progress.')}</p>
         <label for="stName">${tr('الاسم', 'Name')}</label>
         <input id="stName" required maxlength="40" autocomplete="name" value="${esc(S.student?.name || '')}">
         <label for="stClass">${tr('الصف أو الشعبة (اختياري)', 'Class or section (optional)')}</label>
@@ -1108,7 +1125,7 @@
     $('#explainBtn').innerHTML = tb('info', on ? tr('إيقاف الشرح', 'Stop explaining') : tr('اشرح لي', 'Explain'));
     $('#probesBtn').innerHTML = tb('target', tr('أعد المجسات', 'Reset probes'));
     $('#pRestart').innerHTML = tb('refresh', tr('إعادة', 'Restart'));
-    $('#guideBtn').innerHTML = tb('book', tr('الدليل', 'Guide'));
+    $('#guideBtn').innerHTML = tb('book', tr('دليل الاستخدام', 'User guide'));
     const fs = !!document.fullscreenElement;
     $('#fullBtn').innerHTML = tb(fs ? 'x' : 'eye', fs ? tr('خروج', 'Exit') : tr('ملء الشاشة', 'Fullscreen'));
     $('#fullBtn').hidden = !document.fullscreenEnabled;
@@ -1120,7 +1137,7 @@
     b.setAttribute('aria-label', I18N.lang === 'en' ? 'التبديل إلى العربية' : 'Switch to English');
   }
 
-  // بطاقات المهام: ضوء يتبع المؤشر + ميل خفيف (على أجهزة الماوس فقط)
+  // بطاقات التجارب: ضوء يتبع المؤشر + ميل خفيف (على أجهزة الماوس فقط)
   function setupCardFx() {
     if (UI.reduce() || !matchMedia('(hover: hover)').matches) return;
     document.addEventListener('pointermove', e => {
